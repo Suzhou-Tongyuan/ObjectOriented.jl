@@ -84,3 +84,7 @@ function apply_curly(t_base, t_args::AbstractVector)
         :($t_base{$(t_args...)})
     end
 end
+
+function create_exception(ln::LineNumberNode, reason::String)
+    LoadError(string(ln.file), ln.line, ErrorException(reason))
+end

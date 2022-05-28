@@ -42,8 +42,6 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.MLStyle]]
 git-tree-sha1 = "2041c1fd6833b3720d363c3ea8140bffaf86d9c4"
-repo-rev = "master"
-repo-url = "https://github.com/thautwarm/MLStyle.jl.git"
 uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 version = "0.4.12"
 

@@ -1,10 +1,19 @@
 module RunTime
-export Object, BoundMethod
+export Object, BoundMethod, Property
 export construct
 export direct_fields, direct_methods, base_field, ootype_bases, getproperty_fallback, setproperty_fallback!
 export get_base, check_abstract, issubclass, isinstance
 
 ## RTS functions and types
+
+"""
+用来实现`@construct`宏。
+该单例类型传递给generated function `construct`，
+用来对任意结构体构造零开销、参数无序的构造器。
+
+用法：
+    TyOOP.construct(目标类型, InitField{field符号, nothing或基类对象}())
+"""
 struct InitField{Sym, Base} end
 abstract type Object{U} end
 
@@ -32,14 +41,16 @@ end
 
 
 Base.@inline function get_base(x::T, t) where T
-    getfield(x, base_field(T, t))
+    Base.getfield(x, base_field(T, t))
 end
 
 function base_field(T, t)
     error("type $T has no base type $t")
 end
 
-Base.@inline function check_abstract(t) Symbol[] end
+"""查询类型没有实现的抽象方法，用以检查目的。
+"""
+Base.@inline function check_abstract(t) Pair[] end
 
 Base.@inline function issubclass(a :: Type, b :: Type)
     false
@@ -72,11 +83,7 @@ end
     n = div(length(args), 2)
     names = fieldnames(T)
     types = fieldtypes(T)
-    if length(names) !== n
-        return :(error("incorrect construction for '$T'"))
-    end
-    
-    arguments = Vector{Any}(undef, n)
+    arguments = Vector{Any}(undef, length(names))
     for i = 1:n
         kw = args[2i-1]
         bare = _unwrap(kw)
@@ -104,7 +111,7 @@ end
             arguments[indice] = :(args[$(2i)])
         end
     end
-    
+
     for i = eachindex(arguments)
         if !isassigned(arguments, i)
             if isbitstype(types[i]) && sizeof(types[i]) === 0
@@ -120,6 +127,5 @@ end
 @generated function construct(::Type{T}, args...) where T
     _construct(T, args)
 end
-
 
 end # module

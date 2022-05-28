@@ -4,7 +4,7 @@ export @oodef, @construct, @base, @like
 if isdefined(Base, :Experimental)
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
 end
-import PyStyle
+import TyOOP
 using MLStyle
 using MacroTools: @q
 using DataStructures

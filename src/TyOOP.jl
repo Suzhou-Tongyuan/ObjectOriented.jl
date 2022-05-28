@@ -1,4 +1,4 @@
-module PyStyle
+module TyOOP
 export @oodef
 using Reexport
 include("runtime.jl")

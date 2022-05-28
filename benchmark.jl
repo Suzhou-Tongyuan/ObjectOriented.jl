@@ -6,7 +6,7 @@ using TyOOP
 end
 
 @oodef mutable struct Vehicle <: IVehicle
-    m_speed::Float64
+    m_speed :: Float64
     function new(speed)
         @construct begin
             m_speed = speed
@@ -39,8 +39,8 @@ end
 end
 
 @oodef mutable struct House <: IHouse
-    m_rooms::Int
-
+    m_rooms :: Int
+    
     function new(rooms::Int)
         @construct begin
             # @base(IHouse) = IHouse()
@@ -50,25 +50,14 @@ end
     # class methods
 
     # virtual methods
+    # override
+    function get_rooms(self)
+        self.m_rooms
+    end
 
     # override
-    # function get_rooms(self) # 'get_xxx' defines a getter
-    #     self.m_rooms
-    # end
-
-    # override
-    # function set_rooms(self, value) # 'set_xxx' defines a setter
-    #     self.m_rooms = value
-    # end
-
-    # a more readable property definition syntax
-    prop(rooms) do
-        get = function (self)
-            self.m_rooms
-        end
-        set = function (self, value)
-            self.m_rooms = value
-        end    
+    function set_rooms(self, value)
+        self.m_rooms = value
     end
 
     # override
@@ -77,17 +66,18 @@ end
     end
 end
 
-@oodef mutable struct HouseBus <: {Bus, House}
-    m_power::String
 
-    function new(speed::Float64, rooms::Int, power::String = "oil")
+@oodef mutable struct HouseBus <: {Bus, House}
+    m_power :: String
+    
+    function new(speed::Float64, rooms::Int, power :: String = "oil")
         @construct begin
             @base(Bus) = Bus(speed)
             @base(House) = House(rooms)
             m_power = power
         end
     end
-
+    
     function get_power(self)
         self.m_power
     end
@@ -105,15 +95,15 @@ end
 end
 
 @oodef mutable struct RailBus <: {Bus}
-    m_power::String
-
+    m_power :: String
+    
     function new(speed::Float64)
         @construct begin
             @base(Bus) = Bus(speed)
-            m_power = "electricity"
+            m_power="electricity"
         end
     end
-
+    
     function get_power(self)
         self.m_power
     end
@@ -125,10 +115,25 @@ end
     end
 end
 
-housebuses = [
-    [HouseBus(60.0, 2) for i = 1:10000];
-    [RailBus(80.0) for i = 1:10000]
+housebuses = @like(IVehicle)[
+    [HouseBus(rand(Float64), 2) for i in 1:5000]...,
+    [RailBus(rand(Float64)) for i in 1:5000]...
 ]
+
+any_buses = Any[
+    [HouseBus(rand(Float64), 2) for i in 1:5000]...,
+    [RailBus(rand(Float64)) for i in 1:5000]...
+]
+
+union_buses = Union{HouseBus, RailBus}[
+    [HouseBus(rand(Float64), 2) for i in 1:5000]...,
+    [RailBus(rand(Float64)) for i in 1:5000]...
+]
+
+monotype_buses = HouseBus[
+    [HouseBus(rand(Float64), 2) for i in 1:10000]...,
+]
+
 
 function f(buses::Vector)
     for bus in buses
@@ -142,17 +147,40 @@ function f(buses::Vector)
     end
 end
 
-f(housebuses)
-
-function get_speed(o::@like(IVehicle))
-    o.speed
+function sum_speeds(buses::Vector)
+    sum(buses; init=0.0) do bus
+        bus.get_speed()
+    end
 end
 
-using InteractiveUtils
-hb = HouseBus(60.0, 2)
+function sum_speeds_forloop(buses::Vector)
+    s = 0.0
+    @inbounds for bus in buses
+        s += bus.get_speed() :: Float64
+    end
+    s
+end
+
+function g(o::@like(IVehicle))
+    o.get_speed()
+end
+
+hb = HouseBus(80.0, 2)
 rb = RailBus(80.0)
-get_speed(hb)
-get_speed(rb)
-@info :housebus @code_typed get_speed(hb)
-@info :railbus @code_typed get_speed(rb)
-    
+
+using InteractiveUtils
+
+@info :housebus @code_llvm g(hb)
+@info :railbus @code_llvm g(rb)
+
+
+using BenchmarkTools
+@btime sum_speeds(housebuses)
+@btime sum_speeds(any_buses)
+@btime sum_speeds(union_buses)
+@btime sum_speeds(monotype_buses)
+
+@btime sum_speeds_forloop(housebuses)
+@btime sum_speeds_forloop(any_buses)
+@btime sum_speeds_forloop(union_buses)
+@btime sum_speeds_forloop(monotype_buses)
