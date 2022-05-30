@@ -115,7 +115,7 @@ end
     end
 end
 
-housebuses = @like(IVehicle)[
+housebuses = like(IVehicle)[
     [HouseBus(rand(Float64), 2) for i in 1:5000]...,
     [RailBus(rand(Float64)) for i in 1:5000]...
 ]
@@ -161,7 +161,7 @@ function sum_speeds_forloop(buses::Vector)
     s
 end
 
-function g(o::@like(IVehicle))
+function g(o::like(IVehicle))
     o.get_speed()
 end
 

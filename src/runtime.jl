@@ -1,6 +1,6 @@
 module RunTime
 export Object, BoundMethod, Property
-export construct
+export construct, shape_type
 export direct_fields, direct_methods, base_field, ootype_bases, getproperty_fallback, setproperty_fallback!
 export get_base, check_abstract, issubclass, isinstance
 

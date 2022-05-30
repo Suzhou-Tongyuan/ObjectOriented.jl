@@ -1,5 +1,5 @@
 module CompileTime
-export @oodef, @construct, @base, @like
+export @oodef, @construct, @base, like
 
 if isdefined(Base, :Experimental)
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0

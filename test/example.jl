@@ -1,4 +1,8 @@
+module Example
+using Test
 using TyOOP
+
+DoPrint = Ref(false)
 
 @oodef struct IVehicle
     function get_speed end
@@ -134,29 +138,43 @@ housebuses = [
     [RailBus(80.0) for i = 1:10000]
 ]
 
+res = []
 function f(buses::Vector)
     for bus in buses
         info = bus.info()
         if bus isa HouseBus
             cook = bus.can_cook()
-            @info typeof(bus) info cook
+            if DoPrint[]
+                @info typeof(bus) info cook
+            else
+                push!(res, (typeof(bus), info, cook))
+            end
         else
-            @info typeof(bus) info
+            if DoPrint[]
+                @info typeof(bus) info
+            else
+                push!(res, (typeof(bus), info))
+            end
         end
     end
 end
 
-f(housebuses)
 
 function get_speed(o::like(IVehicle))
     o.speed
 end
 
 using InteractiveUtils
-hb = HouseBus(60.0, 2)
-rb = RailBus(80.0)
-get_speed(hb)
-get_speed(rb)
-@info :housebus @code_typed get_speed(hb)
-@info :railbus @code_typed get_speed(rb)
+
+function runtest()
+    @testset "example" begin
+        f(housebuses)
+        hb = HouseBus(60.0, 2)
+        rb = RailBus(80.0)
+        get_speed(hb)
+        get_speed(rb)
+    end
+end
+
+end
     
