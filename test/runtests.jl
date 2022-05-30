@@ -189,9 +189,11 @@ module structdef
         end
     end
 
-    myvec = MyVector(1, 2, 3, 5)
-    setindex!(myvec, 2, 3)
-    @test getindex(myvec, 2) == 3
+    @testset "interface programming is multiple-dispatch compatible" begin
+        myvec = MyVector(1, 2, 3, 5)
+        setindex!(myvec, 2, 3)
+        @test getindex(myvec, 2) == 3
+    end
 end
 
 include("example.jl")
