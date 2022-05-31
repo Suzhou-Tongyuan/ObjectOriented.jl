@@ -71,17 +71,23 @@ module structdef
     @oodef struct A3
         function interface_method1 end
         function interface_method2 end
-        prop(interface_prop) do
+        @property(interface_prop) do
             set
             get
         end
     end
     
     @oodef struct A4
+
+        # get_xxx generates a getter xxx
+        # get_xxx 自动生成getter xxx
         function get_a end
+        # set_xxx 自动生成setter xxx
         function set_a end
     end
 
+    # 检查未实现的抽象方法
+    # check unimplemented abstract methods
     @testset "interfaces 1" begin
         @test Set(keys(TyOOP.check_abstract(A3))) == Set([
             PropertyName(false, :interface_prop), # getter
@@ -98,25 +104,29 @@ module structdef
         ])
     end
 
-    # mutable means classes
+    # 'mutable' means 'classes'
+    # 'mutable' 表示'类'
     @oodef mutable struct B34 <: {A3, A4}
         x :: Int
         function new(x)
             @construct begin
                 #= empty struct bases can be omitted: =#
+                #= 空结构体基类可以省略： =#
                 # @base(A3) = A3()
                 # @base(A4) = A4()
                 x = x
             end
         end
+
         function interface_method1(self)
             println(1)
         end
+
         function interface_method2(self)
             println(1)
         end
-        
-        prop(interface_prop) do
+
+        @property(interface_prop) do
             set = function (self, value)
                 self.x = value - 1
             end
@@ -143,6 +153,8 @@ module structdef
         @test b.x === 9
     end
 
+    # can fetch a type's properties
+    # 可以获取类型的properties
     @testset "propertynames" begin
         issubset(
             Set([:x, :a, :interface_method2, :interface_method1, :interface_prop, :get_a, :set_a]),
@@ -150,6 +162,7 @@ module structdef
     end
 
     # work with julia stdlib
+    # 能和Julia标准库一同工作
     @oodef struct IRandomIndexRead{IndexType}
         function getindex end
     end
@@ -158,22 +171,25 @@ module structdef
         function setindex! end
     end
 
-    function Base.getindex(x::like(IRandomIndexRead{>:I}), i::I) where I
+    function Base.getindex(x::@like(IRandomIndexRead{>:I}), i::I) where I
         x.getindex(i)
     end
 
-    function Base.setindex!(x::like(IRandomIndexWrite{>:I, >:E}), i::I, value::E) where {I, E}
+    function Base.setindex!(x::@like(IRandomIndexWrite{>:I, >:E}), i::I, value::E) where {I, E}
         x.setindex!(i, value)
     end
 
     @oodef struct MyVector{T} <: {IRandomIndexRead{Integer}, IRandomIndexWrite{Integer, T}}
         inner :: Vector{T}
+        
         function new(args :: T...)
             @construct begin
                 inner = collect(args)
             end
         end
-
+        
+        # constructor overloading
+        # 重载构造器
         function new(vec :: Vector{T})
             @construct begin
                 inner = vec
@@ -190,6 +206,7 @@ module structdef
     end
 
     @testset "interface programming is multiple-dispatch compatible" begin
+        # 接口编程与多重派发兼容
         myvec = MyVector(1, 2, 3, 5)
         setindex!(myvec, 2, 3)
         @test getindex(myvec, 2) == 3

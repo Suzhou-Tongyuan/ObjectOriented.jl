@@ -1,6 +1,6 @@
 import TyOOP.RunTime: Object
 using DataStructures
-export PropertyName, like
+export PropertyName, like, @like, @property
 
 @nospecialize
 
@@ -97,6 +97,14 @@ Base.@pure function like(@nospecialize(t))
     end
 end
 
+macro like(t)
+    esc(:($like($t)))
+end
+
+macro property(f, ex)
+    esc(Expr(:do, :(define_property($ex)), f))
+end
+
 function _unionall_expr()
     :($Union{})
 end
@@ -180,7 +188,7 @@ function oodef(__module__::Module, __source__::LineNumberNode, is_mutable::Bool,
                 push!(struct_block, :($n :: $t))
                 has_any_field = true
 
-            @case Expr(:do, :(prop($name)), Expr(:->, Expr(:tuple), Expr(:block, inner_body...)))
+            @case Expr(:do, :(define_property($name)), Expr(:->, Expr(:tuple), Expr(:block, inner_body...)))
                 setter = nothing
                 getter = nothing
                 for decl in inner_body

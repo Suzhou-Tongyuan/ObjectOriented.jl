@@ -37,7 +37,7 @@ end
 end
 
 @oodef struct IHouse
-    prop(rooms) do
+    @property(rooms) do
         get
         set
     end
@@ -68,7 +68,7 @@ end
     # end
 
     # a more readable property definition syntax
-    prop(rooms) do
+    @property(rooms) do
         get = function (self)
             self.m_rooms
         end
@@ -160,7 +160,7 @@ function f(buses::Vector)
 end
 
 
-function get_speed(o::like(IVehicle))
+function get_speed(o::@like(IVehicle))
     o.speed
 end
 
