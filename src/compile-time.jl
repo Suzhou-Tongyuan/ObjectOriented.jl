@@ -4,11 +4,13 @@ export @oodef, @construct, @base, like
 if isdefined(Base, :Experimental)
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
 end
+
 import TyOOP
 using MLStyle
 using MacroTools: @q
 using DataStructures
 
+include("compile-time.c3_linearize.jl")
 include("compile-time.utils.jl")
 include("compile-time.class.jl")
 

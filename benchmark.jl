@@ -175,10 +175,10 @@ using InteractiveUtils
 
 
 using BenchmarkTools
-@btime sum_speeds(housebuses)
-@btime sum_speeds(any_buses)
-@btime sum_speeds(union_buses)
-@btime sum_speeds(monotype_buses)
+# @btime sum_speeds(housebuses)
+# @btime sum_speeds(any_buses)
+# @btime sum_speeds(union_buses)
+# @btime sum_speeds(monotype_buses)
 
 @btime sum_speeds_forloop(housebuses)
 @btime sum_speeds_forloop(any_buses)

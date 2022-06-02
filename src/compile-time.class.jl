@@ -215,10 +215,10 @@ function oodef(__module__::Module, __source__::LineNumberNode, is_mutable::Bool,
                     end
                 end
                 if getter !== nothing
-                    push!(vtable_block, Expr(:call, PropertyDefinition, QuoteNode(name), getter, typename, GetterPropertyKind))
+                    push!(vtable_block, Expr(:call, PropertyDefinition, QuoteNode(name), Expr(:block, ln, getter), typename, GetterPropertyKind))
                 end
                 if setter !== nothing
-                    push!(vtable_block, Expr(:call, PropertyDefinition, QuoteNode(name), setter, typename, SetterPropertyKind))
+                    push!(vtable_block, Expr(:call, PropertyDefinition, QuoteNode(name), Expr(:block, ln, setter), typename, SetterPropertyKind))
                 end
 
             @case Expr(:function, Expr(:call, &typename, args...), _)
@@ -229,7 +229,9 @@ function oodef(__module__::Module, __source__::LineNumberNode, is_mutable::Bool,
                 generic_type = apply_curly(typename, generic_params)
                 insert!(func_body.args, 1, :($sym_generic_type = $generic_type))
                 insert!(func_body.args, 1, ln)
-                push!(struct_block, Expr(:function, :($(Expr(:call, typename, args...)) where {$(generic_params...)}), func_body))
+                push!(struct_block,
+                        ln,
+                        Expr(:function, :($(Expr(:call, typename, args...)) where {$(generic_params...)}), func_body))
 
             @case Expr(:function, abstract_meth_name::Symbol)
                 push!(vtable_block,
@@ -240,7 +242,7 @@ function oodef(__module__::Module, __source__::LineNumberNode, is_mutable::Bool,
                 name = name_view[]
                 name_view[] = Symbol(typename, "::", name)
                 push!(vtable_block,
-                        Expr(:call, PropertyDefinition, QuoteNode(name), stmt, typename, MethodKind))
+                        Expr(:call, PropertyDefinition, QuoteNode(name), Expr(:block, ln, stmt), typename, MethodKind))
 
             @case unrecogised
                 throw(create_exception(ln, "unrecognised statement in $typename definition: $(string(stmt))"))
@@ -275,30 +277,6 @@ function oodef(__module__::Module, __source__::LineNumberNode, is_mutable::Bool,
             rt_methods=$PropertyDefinition[$(vtable_block...)],
             rt_bases=[$(base_block...)]))))
     Expr(:block, outer_block...)
-end
-
-function c3_linearized(::Type{root}) where root
-    mro = Tuple{Type, Tuple}[]
-    visited = Set{Type}()
-    queue = Queue{Tuple{Type, Tuple}}()
-    enqueue!(queue, (root, ()))
-    while length(queue) > 0
-        (cls, path) = dequeue!(queue)
-        # TODO: support sealed class?
-        if cls in visited
-            continue
-        end
-        push!(visited, cls)
-        push!(mro, (cls, path))
-        bases = TyOOP.ootype_bases(cls)
-        if isempty(bases)
-            continue
-        end
-        for base in bases
-            enqueue!(queue, (base, (path..., base)))
-        end
-    end
-    mro
 end
 
 function build_multiple_dispatch(
@@ -349,6 +327,7 @@ function build_multiple_dispatch(
         :($TyOOP.direct_methods(::$Type{<:$t}) = $(QuoteNode(method_dict))))
 
     push!(out, :((@__MODULE__).eval($build_multiple_dispatch2(LineNumberNode(@__LINE__, Symbol(@__FILE__)), $(QuoteNode(t))))))
+    push!(out, t)
     Expr(:block, out...)
 end
 
@@ -378,39 +357,22 @@ function _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, 
 end
 
 function _build_method_get(push_getter!, this, path, sym, funcval)
-    @switch path begin
-        @case []
-            push_getter!(
-                QuoteNode(sym) =>
-                :($TyOOP.BoundMethod($this, $funcval)))
-
-        @case [head, path...]
-            _build_method_get(push_getter!, :($TyOOP.get_base($this, $head)), path, sym, funcval)
-    end
+    push_getter!(
+        QuoteNode(sym) =>
+        :($TyOOP.BoundMethod($this, $funcval)))
 end
 
 function _build_getter_property(push_getter!, this, path, sym, getter_func)
-    @switch path begin
-        @case []
-            push_getter!(
-                QuoteNode(sym) =>
-                :($getter_func($this)))
-        @case [head, path...]
-            _build_getter_property(push_getter!, :($TyOOP.get_base($this, $head)), path, sym, getter_func)
-    end
+    push_getter!(
+        QuoteNode(sym) =>
+        :($getter_func($this)))
 end
 
 function _build_setter_property(push_setter!, this, path, sym, setter_func)
-    @switch path begin
-        @case []
-            push_setter!(
-                QuoteNode(sym) =>
-                :($setter_func($this, value)))
-        @case [head, path...]
-            _build_setter_property(push_setter!, :($TyOOP.get_base($this, $head)), path, sym, setter_func)
-    end
+    push_setter!(
+        QuoteNode(sym) =>
+        :($setter_func($this, value)))
 end
-
 
 function build_if(pairs, else_block)
     foldr(pairs; init=else_block) do (cond, then), r
@@ -428,7 +390,8 @@ function build_multiple_dispatch3(ln, t)
     push_setter!(x) = push!(set_block, x)
 
     subclass_block = []
-    for (base, path_tuple) in c3_linearized(t)
+    mro = cls_linearize(t)
+    for (base, path_tuple) in mro
         path = Type[path_tuple...]
         push!(
             subclass_block,
@@ -473,12 +436,8 @@ function build_multiple_dispatch3(ln, t)
         delete!(abstract_methods, implemented)
     end
 
-    if !isempty(abstract_methods)
-        check_abstract_def = @q function $TyOOP.check_abstract(::$Type{<:$t})
-            $(QuoteNode(abstract_methods))
-        end
-    else
-        check_abstract_def = nothing
+    check_abstract_def = @q function $TyOOP.check_abstract(::$Type{<:$t})
+        $(QuoteNode(abstract_methods))
     end
 
     _inline_meta = Expr(:meta, :inline)
@@ -491,13 +450,14 @@ function build_multiple_dispatch3(ln, t)
         $(subclass_block...)
         $check_abstract_def
 
-        function $Base.getproperty(this::$t, prop::Symbol)
+        $TyOOP.ootype_mro(::Type{<:$t}) = $mro
+        Base.@inline function $Base.getproperty(this::$t, prop::Symbol)
             $_inline_meta
             $ln
             $getter_body
         end
 
-        function $Base.setproperty!(this::$t, prop::Symbol, value)
+        Base.@inline function $Base.setproperty!(this::$t, prop::Symbol, value)
             $_inline_meta
             $ln
             $setter_body

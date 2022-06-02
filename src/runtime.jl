@@ -1,7 +1,8 @@
 module RunTime
 export Object, BoundMethod, Property
 export construct, shape_type
-export direct_fields, direct_methods, base_field, ootype_bases, getproperty_fallback, setproperty_fallback!
+export ootype_bases, ootype_mro
+export direct_fields, direct_methods, base_field, getproperty_fallback, setproperty_fallback!
 export get_base, check_abstract, issubclass, isinstance
 
 ## RTS functions and types
@@ -24,6 +25,7 @@ end
 
 Base.@inline (m::BoundMethod{This, Func})(args...; kwargs...) where {This, Func} = m.func(m.this, args...; kwargs...)
 
+function ootype_mro end
 function ootype_bases(x)
     Type[]
 end
@@ -50,15 +52,17 @@ end
 
 """查询类型没有实现的抽象方法，用以检查目的。
 """
-Base.@inline function check_abstract(t) Pair[] end
+function check_abstract end
 
 Base.@inline function issubclass(a :: Type, b :: Type)
     false
 end
 
-Base.@inline function isinstance(:: T, cls) where T
+Base.@inline function isinstance(:: T, cls) where T <: Object
     issubclass(T, cls)
 end
+
+Base.@inline isinstance(jl_val, cls) = jl_val isa cls
 
 ## END
 
@@ -114,7 +118,7 @@ end
 
     for i = eachindex(arguments)
         if !isassigned(arguments, i)
-            if isbitstype(types[i]) && sizeof(types[i]) === 0
+            if ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
                 arguments[i] = mk_init_singleton(types[i])
                 continue
             end

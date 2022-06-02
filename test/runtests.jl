@@ -5,6 +5,8 @@ using TyOOP
 module structdef
     using TyOOP
     using Test
+    using MLStyle: @match
+    import InteractiveUtils
 
     # Julia's default constructor are used for structs that have fields
     # 当结构体存在字段，使用Julia默认的构造器
@@ -171,11 +173,11 @@ module structdef
         function setindex! end
     end
 
-    function Base.getindex(x::@like(IRandomIndexRead{>:I}), i::I) where I
+    Base.@inline function Base.getindex(x::@like(IRandomIndexRead{>:I}), i::I) where I
         x.getindex(i)
     end
 
-    function Base.setindex!(x::@like(IRandomIndexWrite{>:I, >:E}), i::I, value::E) where {I, E}
+    Base.@inline function Base.setindex!(x::@like(IRandomIndexWrite{>:I, >:E}), i::I, value::E) where {I, E}
         x.setindex!(i, value)
     end
 
@@ -210,6 +212,37 @@ module structdef
         myvec = MyVector(1, 2, 3, 5)
         setindex!(myvec, 2, 3)
         @test getindex(myvec, 2) == 3
+        
+        # 代码被优化到最佳形式
+        @testset "code optimization" begin
+            c = InteractiveUtils.@code_typed getindex(myvec, 2)
+            @info :optimized_code c
+            # │   c =
+            # │    CodeInfo(
+            # │    1 ─ %1 = (getfield)(x, :inner)::Vector{Int64}
+            # │    │   %2 = Base.arrayref(true, %1, i)::Int64
+            # │    └──      return %2
+            # └    ) => Int64
+            @test c.second === Int
+            @test @match c.first.code[2] begin
+                Expr(:call, f, _...) && if f == GlobalRef(Base, :arrayref) end => true
+                _ => false
+            end
+            @test length(c.first.code) == 3
+        end
+    end
+
+    @oodef struct OverloadedMethodDemo
+        function test(self, a::Int)
+            "Int $a"
+        end
+        function test(self, a, b)
+            "2-ary"
+        end
+    end
+    @testset "overloading" begin
+        @test OverloadedMethodDemo().test(1) == "Int 1"
+        @test OverloadedMethodDemo().test(1, 2) == "2-ary"
     end
 end
 
