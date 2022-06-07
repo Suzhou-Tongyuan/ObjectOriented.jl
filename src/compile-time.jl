@@ -1,5 +1,6 @@
 module CompileTime
-export @oodef, @construct, @base, like
+export @oodef, @construct, @base, @property
+export PropertyName, like, @like
 
 if isdefined(Base, :Experimental)
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
@@ -9,19 +10,17 @@ import TyOOP
 using MLStyle
 using MacroTools: @q
 using DataStructures
-
-include("compile-time.c3_linearize.jl")
 include("compile-time.utils.jl")
-include("compile-time.class.jl")
+include("compile-time.reflection.jl")
+include("compile-time.c3_linearize.jl")
+include("compile-time.buildclass.jl")
+# include("compile-time.class.jl")
+include("compile-time.static_dispatch.jl")
 
 macro oodef(ex)
-    @switch ex begin
-        @case :(mutable struct $defhead; $(body...) end)
-              esc(canonicalize_where(oodef(__module__, __source__, true, defhead, body)))
-
-        @case :(struct $defhead; $(body...) end)
-              esc(canonicalize_where(oodef(__module__, __source__, false, defhead, body)))
-    end
+    preprocess(x) = Base.macroexpand(__module__, x)
+    type_def = parse_class(__source__, ex, preprocess=preprocess)
+    esc(codegen(__source__, __module__, type_def))
 end
 
 end # module

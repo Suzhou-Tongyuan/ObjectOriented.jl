@@ -132,4 +132,6 @@ end
     _construct(T, args)
 end
 
+function New end
+
 end # module
