@@ -53,7 +53,7 @@ function build_multiple_dispatch!(
 
     for (k, v) in cgi.base_dict
         push!(out,
-            :(Base.@inline $TyOOP.base_field(::$Type{<:$t}, ::Type{<:$k}) = $(QuoteNode(v))))
+            :($Base.@inline $TyOOP.base_field(::$Type{<:$t}, ::Type{<:$k}) = $(QuoteNode(v))))
     end
 
     push!(out,
@@ -115,10 +115,10 @@ function build_if(pairs, else_block)
     end
 end
 
-
 function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     t = cgi.typename
     defined = OrderedSet{PropertyName}()
+    cur_mod = cgi.cur_mod
     get_block = []
     set_block = []
     abstract_methods = Dict{PropertyName, PropertyDefinition}()
@@ -128,30 +128,19 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     subclass_block = []
     
     mro = cls_linearize(collect(keys(cgi.base_dict)))
-    pushfirst!(mro, (GlobalRef(cgi.cur_mod, cgi.typename), ()))
+    pushfirst!(mro, (:($(cgi.cur_mod).$(cgi.typename)), ()))
     mro_expr = :[$([Expr(:tuple, k, v) for (k, v) in mro]...)]
-
-    function _direct_fields(base :: GlobalRef)
-        cgi.fieldnames
-    end
-
-    function _direct_fields(base::Type)
-        TyOOP.direct_fields(base)
-    end
     
-    function _direct_methods(base :: GlobalRef)
-        cgi.method_dict
-    end
-
-    function _direct_methods(base :: Type)
-        TyOOP.direct_methods(base)
-    end
+    _direct_fields(base :: Expr) = cgi.fieldnames
+    _direct_fields(base::Type) = TyOOP.direct_fields(base)
+    _direct_methods(base :: Expr) = cgi.method_dict
+    _direct_methods(base :: Type) = TyOOP.direct_methods(base)
 
     for (base, path_tuple) in mro
         path = Any[path_tuple...]
         push!(
             subclass_block,
-            :(Base.@inline $TyOOP.issubclass(::$Type{<:$t}, ::$Type{<:$base}) = true))
+            :($Base.@inline $TyOOP.issubclass(::$Type{<:$cur_mod.$t}, ::$Type{<:$base}) = true))
         for fieldname :: Symbol in _direct_fields(base)
             if @getter_prop(fieldname) in defined
                 continue
@@ -196,7 +185,6 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
         $(QuoteNode(abstract_methods))
     end
 
-    _inline_meta = Expr(:meta, :inline)
     getter_body = build_if(get_block, :($TyOOP.getproperty_fallback(this, prop)))
     setter_body = build_if(set_block, :($TyOOP.setproperty_fallback!(this, prop, value)))
     propertynames = Symbol[k.name for k in defined]
@@ -205,21 +193,19 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     push!(out, ln)
     append!(out, subclass_block)
     push!(out, check_abstract_def)
-    push!(out, :($TyOOP.ootype_mro(::Type{<:$t}) = $mro_expr))
+    push!(out, :($TyOOP.ootype_mro(::$Type{<:$t}) = $mro_expr))
     push!(out, @q begin
-            Base.@inline function $Base.getproperty(this::$t, prop::Symbol)
-                $_inline_meta
+            $Base.@inline function $Base.getproperty(this::$cur_mod.$t, prop::$Symbol)
                 $ln
                 $getter_body
             end
     
-            Base.@inline function $Base.setproperty!(this::$t, prop::Symbol, value)
-                $_inline_meta
+            $Base.@inline function $Base.setproperty!(this::$cur_mod.$t, prop::$Symbol, value)
                 $ln
                 $setter_body
             end
     
-            Base.@inline function $Base.propertynames(::Type{<:$t})
+            $Base.@inline function $Base.propertynames(::$Type{<:$cur_mod.$t})
                 $ln
                 $(expr_propernames)
             end

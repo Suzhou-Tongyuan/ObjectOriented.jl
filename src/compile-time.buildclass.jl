@@ -9,8 +9,8 @@ MLStyle.pattern_uncall(e::PropertyKind, _, _, _, _) = MLStyle.AbstractPatterns.l
 
 struct PropertyDefinition
     name::Symbol
-    def::Union{Missing, GlobalRef} # nothing for abstract methods
-    from_type::GlobalRef
+    def::Union{Missing, Expr} # nothing for abstract methods
+    from_type::Expr
     kind :: PropertyKind
 end
 
@@ -142,7 +142,7 @@ mutable struct CodeGenInfo
 end
 
 function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
-    bases = OrderedDict{Type, Symbol}()
+    base_dict = OrderedDict{Type, Symbol}()
     struct_block = []
     default_parameters = []
     outer_block = []
@@ -180,6 +180,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             each.typePars = TypeParamInfo[type_def.typePars..., each.typePars...]
             insert!(each.body.args, 1, :($sym_generic_type = $class_ann))
             insert!(each.body.args, 1, each.ln)
+            insert!(each.body.args, 1, Expr(:meta, :inline))
             each.name = typename
             push!(struct_block, each.ln)
             push!(struct_block, to_expr(each))
@@ -200,8 +201,8 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         push!(methods,
             PropertyDefinition(
                 name,
-                each.isAbstract ? missing : GlobalRef(cur_mod, meth_name),
-                GlobalRef(cur_mod, typename),
+                each.isAbstract ? missing : :($cur_mod.$meth_name),
+                :($cur_mod.$typename),
                 MethodKind))
     
     end
@@ -222,8 +223,8 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             push!(methods,
                 PropertyDefinition(
                     name,
-                    prop.isAbstract ? missing : GlobalRef(cur_mod, meth_name),
-                    GlobalRef(cur_mod, typename),
+                    prop.isAbstract ? missing : :($cur_mod.$meth_name),
+                    :($cur_mod.$typename),
                     SetterPropertyKind))
         
         end
@@ -241,15 +242,15 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             push!(methods,
                 PropertyDefinition(
                     name,
-                    prop.isAbstract ? missing : GlobalRef(cur_mod, meth_name),
-                    GlobalRef(cur_mod, typename),
+                    prop.isAbstract ? missing : :($cur_mod.$meth_name),
+                    :($cur_mod.$typename),
                     GetterPropertyKind))
         end
     end
 
     for (idx, each::TypeRepr) in enumerate(type_def.bases)
         base_name_sym = Symbol(typename, "::layout$idx::", string(each.base))
-        bases[Base.eval(cur_mod, each.base)] = base_name_sym
+        base_dict[Base.eval(cur_mod, each.base)] = base_name_sym
         type_expr = to_expr(each)
         push!(default_parameters, :($base_name_sym :: $type_expr))
         push!(struct_block, :($base_name_sym :: $type_expr))
@@ -273,7 +274,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
 
     cgi = CodeGenInfo(
         cur_mod,
-        bases,
+        base_dict,
         fieldnames,
         typename, 
         class_where,

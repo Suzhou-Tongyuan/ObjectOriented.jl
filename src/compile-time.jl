@@ -20,7 +20,7 @@ include("compile-time.static_dispatch.jl")
 macro oodef(ex)
     preprocess(x) = Base.macroexpand(__module__, x)
     type_def = parse_class(__source__, ex, preprocess=preprocess)
-    esc(codegen(__source__, __module__, type_def))
+    esc(canonicalize_where(codegen(__source__, __module__, type_def)))
 end
 
 end # module

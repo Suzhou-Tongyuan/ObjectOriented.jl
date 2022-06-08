@@ -161,17 +161,24 @@ function sum_speeds_forloop(buses::Vector)
     s
 end
 
-function g(o::@like(IVehicle))
-    o.get_speed()
+# function g(o::@like(IVehicle))
+#     o.get_speed()
+# end
+
+function g(o::HouseBus)
+    get_base(o, Bus).get_speed()
 end
 
 hb = HouseBus(80.0, 2)
 rb = RailBus(80.0)
 
 using InteractiveUtils
-
+@info :housebus code_typed(g, (HouseBus, ))
+@info :housebus @code_typed g(hb)
 @info :housebus @code_llvm g(hb)
-@info :railbus @code_llvm g(rb)
+
+
+# @info :railbus @code_llvm g(rb)
 
 
 using BenchmarkTools
@@ -180,8 +187,8 @@ using BenchmarkTools
 # @btime sum_speeds(union_buses)
 # @btime sum_speeds(monotype_buses)
 
-@btime sum_speeds_forloop(housebuses)
-@btime sum_speeds_forloop(any_buses)
-@btime sum_speeds_forloop(union_buses)
-@btime sum_speeds_forloop(monotype_buses)
+# @btime sum_speeds_forloop(housebuses)
+# @btime sum_speeds_forloop(any_buses)
+# @btime sum_speeds_forloop(union_buses)
+# @btime sum_speeds_forloop(monotype_buses)
 
