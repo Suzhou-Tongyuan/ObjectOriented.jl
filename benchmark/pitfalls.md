@@ -1,7 +1,6 @@
-using BenchmarkTools
+## 类型不稳定 1：字段
 
-#= Type Stability 1: field =#
-
+```julia
 mutable struct X
     a :: Any
 end
@@ -28,19 +27,19 @@ end
 #   147.800 μs (9489 allocations: 148.27 KiB)
 10000
 
-
-InteractiveUtils.@code_llvm sum1(xs) 
-# 或者 InteractiveUtils.code_llvm(sum1, (typeof(xs1), ))
-# 可以发现存在 jl_apply_generic，意味着动态分派。
-# Julia的动态分派性能极差。
-
-
 @btime sum2(xs)
 #   5.567 μs (1 allocation: 16 bytes)
 10000
 
-#= Type Stability 2: type =#
+```
 
+`InteractiveUtils.@code_llvm sum1(xs)`或者 `InteractiveUtils.code_llvm(sum1, (typeof(xs1), ))`，可以发现存在 `jl_apply_generic`，这意味着动态分派。
+
+Julia的动态分派性能极差。
+
+## 类型不稳定 2： 数组类型
+
+```julia
 using BenchmarkTools
 
 function fslow(n)
@@ -66,42 +65,23 @@ function ffast(n)
 end
 
 @btime fslow(10000)
-@btime ffast(10000)
-
-@code_warntype fslow(10000)
-
-
-# julia> @btime fslow(10000)
 #   432.200 μs (28950 allocations: 452.44 KiB)
-# 50005000
+50005000
 
-# julia> @btime ffast(10000)
+@btime ffast(10000)
 #   4.371 μs (3 allocations: 144 bytes)
-# 50005000
+50005000
+```
 
+`InteractiveUtils.@code_warntype`可以发现类型不稳定的问题。黄色的代码表示可能存在问题，红色表示存在问题。
 
-# In [5]: class Ref:
-#    ...:     def __init__(self, v):
-#    ...:         self.v = v
-#    ...:
-#    ...: def f(n):
-#    ...:     xs = []
-#    ...:     xs.append(Ref(0))
-#    ...:     s = 0
-#    ...:     for i in range(n):
-#    ...:         xs[-1].v = i
-#    ...:         s += xs[-1].v
-#    ...:     return s
-#    ...:
+![1](code_warntype1.png)
 
-# In [6]: f(100)
-# Out[6]: 4950
+![2](code_warntype2.png)
 
-# In [7]: %timeit f(10000)
-# 1 ms ± 16.3 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+## 类型不稳定 3：类型不稳定的全局变量
 
-#= Type Stability 3: Referencing Non-constant Globals =#
-
+```julia
 int64_t = Int
 scalar = 3
 
@@ -128,17 +108,24 @@ function sum_ints2(xs::Vector)
 end
 
 data = [i % 2 == 0 ? 1 : "2" for i = 1:1000000]
-julia> @btime sum_ints1(data)
+
+@btime sum_ints1(data)
 #  18.509 ms (499830 allocations: 7.63 MiB)
 1500000
 
-julia> @btime sum_ints2(data)
+@btime sum_ints2(data)
 #  476.600 μs (1 allocation: 16 bytes)
 1500000
+```
+
+可以用`@code_warntype`看到性能问题：
+
+![3](toplevel-issue.png)
 
 
-#= Top level is slow =#
+## 顶层作用域性能问题
 
+```julia
 xs = ones(Int, 1000000)
 t0 = time_ns()
 s = 0
@@ -160,3 +147,4 @@ println("time elapsed: ", time_ns() - t0, "ns")
 end
 test_loop(xs) === 1000000
 # time elapsed: 433500ns
+```

@@ -1,6 +1,7 @@
 .vscode/
 enhancement.md
 /example.jl
+/ignored
 inference.jl
 a.jl
 up.sh
