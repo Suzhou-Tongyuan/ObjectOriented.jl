@@ -153,7 +153,8 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
 
     traitname = Symbol(typename, "::", :trait)
     traithead = apply_curly(traitname, Symbol[p.name for p in type_def.typePars])
-
+    custom_init :: Bool = false
+    has_any_field :: Bool = false
     
     class_where = type_def_create_where(type_def)
     class_ann = type_def_create_ann(type_def)
@@ -185,6 +186,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             push!(struct_block, to_expr(each))
             each.name = class_ann
             push!(struct_block, to_expr(each))
+            custom_init = true
             continue
         end
 
@@ -256,6 +258,19 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         push!(outer_block,
                 :(Base.@inline $TyOOP.base_field(::Type{$class_ann}, ::Type{$type_expr}) where {$(class_where...)} = $(QuoteNode(base_name_sym))))
     end
+
+    push!(
+        struct_block,
+        let generic_type = class_ann
+            @q if $(!custom_init) && ($(type_def.isMutable) || sizeof($typename) == 0)
+                function $typename()
+                    $cur_line
+                    $sym_generic_type = $class_ann
+                    $(Expr(:macrocall, getfield(TyOOP, Symbol("@construct")), cur_line))
+                end
+            end
+        end
+    )
 
     defhead = apply_curly(typename, class_where)
     outer_block = [
