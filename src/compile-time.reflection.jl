@@ -83,7 +83,7 @@ end
 
 function to_expr(f::FuncInfo)
     if f.isAbstract
-        return nothing
+        return :nothing
     else
         args = []
         if !isempty(f.kwPars)

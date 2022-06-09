@@ -180,7 +180,6 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             each.typePars = TypeParamInfo[type_def.typePars..., each.typePars...]
             insert!(each.body.args, 1, :($sym_generic_type = $class_ann))
             insert!(each.body.args, 1, each.ln)
-            insert!(each.body.args, 1, Expr(:meta, :inline))
             each.name = typename
             push!(struct_block, each.ln)
             push!(struct_block, to_expr(each))
@@ -197,7 +196,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             each.pars[1].type = :($like($class_ann))
             each.typePars = TypeParamInfo[type_def.typePars..., each.typePars...]
         end
-        push!(outer_block, to_expr(each))
+        push!(outer_block, try_pushmeta!(to_expr(each), :inline))
         push!(methods,
             PropertyDefinition(
                 name,
@@ -219,7 +218,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             meth_name = Symbol(typename, "::", "setter", "::", name)
             prop.name = meth_name
             key = @setter_prop(name)
-            push!(outer_block, to_expr(prop))
+            push!(outer_block, try_pushmeta!(to_expr(prop), :inline))
             push!(methods,
                 PropertyDefinition(
                     name,

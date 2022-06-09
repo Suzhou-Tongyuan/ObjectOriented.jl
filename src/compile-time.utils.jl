@@ -88,3 +88,9 @@ end
 function create_exception(ln::LineNumberNode, reason::String)
     LoadError(string(ln.file), ln.line, ErrorException(reason))
 end
+
+function try_pushmeta!(ex::Expr, sym::Symbol)
+    Base.pushmeta!(ex, sym)
+end
+
+try_pushmeta!(a, sym::Symbol) = a

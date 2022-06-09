@@ -9,8 +9,8 @@ MLStyle.pattern_uncall(e::PropertyKind, _, _, _, _) = MLStyle.AbstractPatterns.l
 
 struct PropertyDefinition
     name::Symbol
-    def::Union{Missing, Expr} # nothing for abstract methods
-    from_type::Expr
+    def::Union{Missing, Function} # nothing for abstract methods
+    from_type::Type
     kind :: PropertyKind
 end
 

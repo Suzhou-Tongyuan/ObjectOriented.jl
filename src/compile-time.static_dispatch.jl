@@ -195,17 +195,20 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     push!(out, check_abstract_def)
     push!(out, :($TyOOP.ootype_mro(::$Type{<:$t}) = $mro_expr))
     push!(out, @q begin
-            $Base.@inline function $Base.getproperty(this::$cur_mod.$t, prop::$Symbol)
+            function $Base.getproperty(this::$cur_mod.$t, prop::$Symbol)
+                $(Expr(:meta, :inline))
                 $ln
                 $getter_body
             end
     
-            $Base.@inline function $Base.setproperty!(this::$cur_mod.$t, prop::$Symbol, value)
+            function $Base.setproperty!(this::$cur_mod.$t, prop::$Symbol, value)
+                $(Expr(:meta, :inline))
                 $ln
                 $setter_body
             end
     
-            $Base.@inline function $Base.propertynames(::$Type{<:$cur_mod.$t})
+            function $Base.propertynames(::$Type{<:$cur_mod.$t})
+                $(Expr(:meta, :inline))
                 $ln
                 $(expr_propernames)
             end
