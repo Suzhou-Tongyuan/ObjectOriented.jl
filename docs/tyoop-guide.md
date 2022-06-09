@@ -250,9 +250,9 @@ DemoProp().value = 200 # => setting 200
     end
 
     @property(area) do
-        get = this -> this.side ^ 2
-        set = function (this, value)
-            this.side = sqrt(value)
+        get = self -> self.side ^ 2
+        set = function (self, value)
+            self.side = sqrt(value)
         end
     end
 end
@@ -288,7 +288,7 @@ TyOOP.check_abstract(AbstractSizedContainer)
 #  contains (getter) => PropertyDefinition(:contains, missing, AbstractSizedContainer, MethodKind)
 #  length (getter)   => PropertyDefinition(:length, missing, AbstractSizedContainer, GetterPropertyKind)
 
-@oodef struct MySet{E} <: AbstractSizedContainer{E}
+@oodef struct MyNumSet{E <: Number} <: AbstractSizedContainer{E}
     inner :: Set{E}
     function new(args::E...)
         @construct begin
@@ -296,7 +296,10 @@ TyOOP.check_abstract(AbstractSizedContainer)
         end
     end
 
-    function contains(self, e::E) where E
+    # if no annotations for 'self',
+    # annotations and type parameters are added like:
+    # 'function contains(self :: @like(MySet{E}), e::E) where E' 
+    function contains(self, e::E)
         return e in self.inner
     end
     
@@ -418,6 +421,25 @@ top:
 
 P.S: 为接口增加默认方法可以实现著名的Mixin抽象。见[继承，多继承](#继承多继承)中的`IPolygon`类型。
 
+## `@typed_access`
+
+Julia点操作符实际上是`getproperty/setproperty!`，因为编译器优化原因，使用Python风格的property会导致类型推导不够精准，降低性能。
+对于可能的性能损失，我们提供`@typed_access`宏，在兼容julia原生语义的条件下，自动优化所有的`a.b`操作。
+
+```julia
+@typed_access begin
+    instance1.method(instance2.property)
+end
+
+# 等价于
+
+TyOOP.typed_access(instance1, Val(:method))(
+    TyOOP.typed_access(instance, Val(:property))
+)
+```
+
+`@typed_access`让动态分派更慢，让静态分派更快。对于`a.b`，如果`a`的类型被Julia成功推断，则`@typed_access a.b`不会比`a.b`慢。
+
 ## Benchmark
 
 我们使用class或struct做嵌套继承，并测试访问基类字段、方法的性能。property是方法语法糖，因此不单独进行测试。
@@ -451,8 +473,8 @@ P.S: 为接口增加默认方法可以实现著名的Mixin抽象。见[继承，
 | 调用最顶层方法     | class | 24.8 ns  |  |
 | 调用最顶层方法 | struct | 35.2 ns |  |
 | 调用最顶层方法     | Python class | 63.2 ns  | inline cache，平均常数时间访问方法 |
-| 数组获取基类字段并求和 | class | 19.9 ns | |
-| 数组获取基类字段并求和 | struct | 6.64 ns | |
-| 数组获取基类字段并求和 | Python class | 410 ns | |
+| 数组获取基类字段并求和 | class | 19.9 us | |
+| 数组获取基类字段并求和 | struct | 6.64 us | |
+| 数组获取基类字段并求和 | Python class | 410 us | |
 
 注：当使用原生Julia时，连续字段访问与TyOOP访问基类字段，无性能差异；对于方法访问，将实例作为参数直接传递给对应类方法，性能等同于TyOOP的方法调用相同，无论方法是否嵌套。这说明使用TyOOP有助于更方便地达到Julia最佳性能。

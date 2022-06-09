@@ -2,7 +2,7 @@ module CompileTime
 export @oodef, @construct, @base, @property
 export PropertyName, like, @like
 
-if isdefined(Base, :Experimental)
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
 end
 
@@ -14,7 +14,6 @@ include("compile-time.utils.jl")
 include("compile-time.reflection.jl")
 include("compile-time.c3_linearize.jl")
 include("compile-time.buildclass.jl")
-# include("compile-time.class.jl")
 include("compile-time.static_dispatch.jl")
 
 macro oodef(ex)

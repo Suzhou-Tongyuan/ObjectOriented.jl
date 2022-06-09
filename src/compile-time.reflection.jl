@@ -59,13 +59,13 @@ function to_expr(tp::TypeParamInfo)
         if tp.ub isa Undefined
             tp.name
         else
-            :($(tp.name) <: $(tp.ub))
+            :($(tp.name) <: $(to_expr(tp.ub)))
         end
     else
         if tp.ub isa Undefined
-            :($(tp.name) >: $(tp.lb))
+            :($(tp.name) >: $(to_expr(tp.lb)))
         else
-            :($(tp.lb) <: $(tp.name) <: $(tp.ub))
+            :($(to_expr(tp.lb)) <: $(tp.name) <: $(to_expr(tp.ub)))
         end
     end
 end
@@ -97,9 +97,9 @@ function to_expr(f::FuncInfo)
             push!(args, to_expr(each))
         end
         header = if f.name isa Undefined
-           Expr(:tuple, args...) 
+           Expr(:tuple, args...)
         else
-            Expr(:call, f.name, args...) 
+            Expr(:call, f.name, args...)
         end
         if !(f.returnType isa Undefined)
             header = :($header :: $(f.returnType))
@@ -147,19 +147,7 @@ end
 function type_def_create_where(t::TypeDef)
     res = []
     for each in t.typePars
-        if each.lb isa Undefined
-            if each.ub isa Undefined
-                push!(res, each.name)
-            else
-                push!(res, :($(each.name) <: $(each.ub)))
-            end
-        else
-            if each.ub isa Undefined
-                push!(res, :($(each.name) >: $(each.lb)))
-            else
-                push!(res, :($(each.lb) <: $(each.name) <: $(each.ub)))
-            end
-        end
+        push!(res, to_expr(each))
     end
     res
 end
@@ -255,7 +243,7 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             continue
         end
         throw(create_exception(ln, "unrecognised statement in $(self.name) definition: $(x)"))
-        
+
     end
 end
 
@@ -369,16 +357,27 @@ function parse_function(ln :: LineNumberNode, ex; fallback :: T = _undefined,  a
         @case Expr(:function, header, body)
             self.body = body
             self.isAbstract = false # unnecessary but clarified
-            parse_function_header!(ln, self, header; allow_short_func = allow_short_func, allow_lambda = allow_lambda)
+            parse_function_header!(ln, self, header; is_lambda = false, allow_lambda = allow_lambda)
             return self
         @case Expr(:function, header)
             self.isAbstract = true
-            parse_function_header!(ln, self, header; allow_short_func = allow_short_func, allow_lambda = allow_lambda)
+            parse_function_header!(ln, self, header; is_lambda = false, allow_lambda = allow_lambda)
+            return self
+        @case Expr(:(->), header, body)
+            if !allow_lambda
+                throw(create_exception(ln, "lambda functions are not allowed here: $ex"))
+            end
+            self.body = body
+            self.isAbstract = false # unnecessary but clarified
+            parse_function_header!(ln, self, header; is_lambda = true, allow_lambda = true)
             return self
         @case Expr(:(=), Expr(:call, _...) && header, rhs)
+            if !allow_short_func
+                throw(create_exception(ln, "short functions are not allowed here: $ex"))
+            end
             self.body = rhs
             self.isAbstract = false
-            parse_function_header!(ln, self, header; allow_short_func = allow_short_func, allow_lambda = allow_lambda)
+            parse_function_header!(ln, self, header; is_lambda = false, allow_lambda = false)
             return self
         @case _
             if fallback isa Undefined
@@ -389,12 +388,12 @@ function parse_function(ln :: LineNumberNode, ex; fallback :: T = _undefined,  a
     end
 end
 
-function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; allow_short_func :: Bool = false, allow_lambda :: Bool = false)
+function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; is_lambda :: Bool = false, allow_lambda :: Bool = false)
 
-    self.typePars = typePars = TypeParamInfo[]
+    typePars = self.typePars
 
     @switch header begin
-        @case Expr(:where, header, tyPar_exprs...) 
+        @case Expr(:where, header, tyPar_exprs...)
             for tyPar_expr in tyPar_exprs
                 push!(typePars, parse_type_parameter(ln, tyPar_expr))
             end
@@ -407,6 +406,10 @@ function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; allo
         @case _
     end
 
+    if is_lambda && !Meta.isexpr(header, :tuple)
+        header = Expr(:tuple, header)
+    end
+
     @switch header begin
         @case Expr(:call, f, Expr(:parameters, kwargs...), args...)
             for x in kwargs
@@ -415,15 +418,15 @@ function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; allo
             for x in args
                 push!(self.pars, parse_parameter(ln, x))
             end
-            parse_function_header!(ln, self, f; allow_short_func = allow_short_func, allow_lambda = allow_lambda)
+            self.name = f
         @case Expr(:call, f, args...)
             for x in args
                 push!(self.pars, parse_parameter(ln, x))
             end
-            parse_function_header!(ln, self, f; allow_short_func = allow_short_func, allow_lambda = allow_lambda)
+            self.name = f
         @case Expr(:tuple, Expr(:parameters, kwargs...), args...)
             if !allow_lambda
-                throw(create_exception(ln, "lambda functions are not supported, you may try parse_function(...; allow_lambda=true)."))
+                throw(create_exception(ln, "tuple function signature are not allowed here."))
             end
             for x in kwargs
                 push!(self.kwPars, parse_parameter(ln, x))
@@ -433,12 +436,17 @@ function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; allo
             end
         @case Expr(:tuple, args...)
             if !allow_lambda
-                throw(create_exception(ln, "lambda functions are not supported, you may try parse_function(...; allow_lambda=true)."))
+                throw(create_exception(ln, "tuple function signature are not allowed here."))
             end
             for x in args
                 push!(self.pars, parse_parameter(ln, x))
             end
         @case _
-            self.name = header
+            if !self.isAbstract
+                throw(create_exception(ln, "unrecognised function signature $header."))
+            else
+                self.name = header
+            end
+
     end
 end

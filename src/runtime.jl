@@ -1,11 +1,14 @@
+## RTS functions and types
 module RunTime
+using MLStyle
 export Object, BoundMethod, Property
 export construct, shape_type
 export ootype_bases, ootype_mro
 export direct_fields, direct_methods, base_field, getproperty_fallback, setproperty_fallback!
 export get_base, check_abstract, issubclass, isinstance
+export getproperty_typed, setproperty_typed!
 
-## RTS functions and types
+export @typed_access
 
 """
 用来实现`@construct`宏。
@@ -23,7 +26,29 @@ struct BoundMethod{This, Func}
     func:: Func
 end
 
-Base.@inline (m::BoundMethod{This, Func})(args...; kwargs...) where {This, Func} = m.func(m.this, args...; kwargs...)
+@inline (m::BoundMethod{This, Func})(args...; kwargs...) where {This, Func} = m.func(m.this, args...; kwargs...)
+
+@inline function getproperty_typed(x, ::Val{T}) where T
+    getproperty(x, T)
+end
+
+@inline function setproperty_typed!(x, value, ::Val{T}) where T
+    setproperty!(x, T, value)
+end
+
+typed_access(x) = x
+
+function typed_access(ex::Expr)
+    @match ex begin
+        :($a.$(b::Symbol) = $c) => :($setproperty_typed!($(typed_access(a)), typed_access(c), $(QuoteNode(Val(b)))))
+        :($a.$(b::Symbol)) => :($getproperty_typed($(typed_access(a)), $(QuoteNode(Val(b)))))
+        Expr(head, args...) => Expr(head, typed_access.(args)...)
+    end
+end
+
+macro typed_access(ex)
+    esc(typed_access(ex))
+end
 
 function ootype_mro end
 function ootype_bases(x)
@@ -41,8 +66,7 @@ function setproperty_fallback!(self, name, value)
     error("unknown property '$name' for object '$self'")
 end
 
-
-Base.@inline function get_base(x::T, t) where T
+@inline function get_base(x::T, t) where T
     Base.getfield(x, base_field(T, t))
 end
 
@@ -54,15 +78,15 @@ end
 """
 function check_abstract end
 
-Base.@inline function issubclass(a :: Type, b :: Type)
+@inline function issubclass(a :: Type, b :: Type)
     false
 end
 
-Base.@inline function isinstance(:: T, cls) where T <: Object
+@inline function isinstance(:: T, cls) where T <: Object
     issubclass(T, cls)
 end
 
-Base.@inline isinstance(jl_val, cls) = jl_val isa cls
+@inline isinstance(jl_val, cls) = jl_val isa cls
 
 ## END
 

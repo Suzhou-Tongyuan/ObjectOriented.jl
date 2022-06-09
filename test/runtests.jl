@@ -26,15 +26,15 @@ module structdef
         a :: Int
         b :: Int
         function new(a::Int, b::Int = 3) # new用来定义OO类型的构造器
-            @construct begin 
-                a = a 
+            @construct begin
+                a = a
                 b = b
             end
         end
 
         function new(;a::Int, b::Int = 3) # new可以重载
-            @construct begin 
-                a = a 
+            @construct begin
+                a = a
                 b = b
             end
         end
@@ -65,9 +65,9 @@ module structdef
         b = B(1, 2, 3)
         @test b.a == 1
         @test b.b == 2
-        @test b.c == 3        
+        @test b.c == 3
     end
-    
+
     # empty structs and inheritances need no custom constructors
     # 空结构体和其继承不需要自定义构造器
     @oodef struct A3
@@ -78,7 +78,7 @@ module structdef
             get
         end
     end
-    
+
     @oodef struct A4
 
         # get_xxx generates a getter xxx
@@ -183,13 +183,13 @@ module structdef
 
     @oodef struct MyVector{T} <: {IRandomIndexRead{Integer}, IRandomIndexWrite{Integer, T}}
         inner :: Vector{T}
-        
+
         function new(args :: T...)
             @construct begin
                 inner = collect(args)
             end
         end
-        
+
         # constructor overloading
         # 重载构造器
         function new(vec :: Vector{T})
@@ -202,7 +202,7 @@ module structdef
             return @inbounds self.inner[i]
         end
 
-        function setindex!(self, i::Integer, v::T) where T
+        function setindex!(self, i::Integer, v::T)
             @inbounds self.inner[i] = v
         end
     end
@@ -212,7 +212,7 @@ module structdef
         myvec = MyVector(1, 2, 3, 5)
         setindex!(myvec, 2, 3)
         @test getindex(myvec, 2) == 3
-        
+
         # 代码被优化到最佳形式
         @testset "code optimization" begin
             c = InteractiveUtils.@code_typed getindex(myvec, 2)
@@ -243,6 +243,24 @@ module structdef
     @testset "overloading" begin
         @test OverloadedMethodDemo().test(1) == "Int 1"
         @test OverloadedMethodDemo().test(1, 2) == "2-ary"
+    end
+
+    @oodef struct TestPropertyInference
+        function get_a(self)
+            1
+        end
+
+        function get_b(self)
+            "str"
+        end
+    end
+    x = TestPropertyInference()
+    @testset "test inferencing properties" begin
+        @test x.a == 1
+        @test x.b == "str"
+        @test Any == (InteractiveUtils.@code_typed x.a).second
+        f(x) = @typed_access x.a
+        @test Int == (InteractiveUtils.@code_typed f(x)).second
     end
 end
 

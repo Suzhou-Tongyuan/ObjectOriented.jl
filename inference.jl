@@ -1,4 +1,5 @@
 using TyOOP
+using InteractiveUtils
 
 @oodef struct IVehicle
     function get_speed end
@@ -32,6 +33,6 @@ end
     end
 end
 
-f(x) = x.get_speed()
+f(x) = @typed_access x.speed
 
 code_warntype(f, (Bus, ))

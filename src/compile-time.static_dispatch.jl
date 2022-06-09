@@ -61,8 +61,6 @@ function build_multiple_dispatch!(
 
     
     build_multiple_dispatch2!(ln, cgi)
-    # # push!(out, :((@__MODULE__).eval($build_multiple_dispatch2(LineNumberNode(@__LINE__, Symbol(@__FILE__)), $(QuoteNode(t))))))
-    # push!(out, t)
 end
 
 function build_multiple_dispatch2!(ln::LineNumberNode, cgi::CodeGenInfo)
@@ -113,6 +111,29 @@ function build_if(pairs, else_block)
     foldr(pairs; init=else_block) do (cond, then), r
         Expr(:if, :(prop === $cond), then, r)
     end
+end
+
+
+function build_val_getters(t, pairs)
+    result = []
+    for (k, v) in pairs
+        exp = @q function $TyOOP.getproperty_typed(this::$t, ::Val{$(k)})
+            return $v
+        end
+        push!(result, exp)
+    end
+    result
+end
+
+function build_val_setters(t, pairs)
+    result = []
+    for (k, v) in pairs
+        exp = @q function $TyOOP.setproperty_typed!(this::$t, value, ::Val{$(k)})
+            return $v
+        end
+        push!(result, exp)
+    end
+    result
 end
 
 function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
@@ -192,17 +213,19 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     out = cgi.outblock
     push!(out, ln)
     append!(out, subclass_block)
+    append!(out, build_val_getters(t, get_block))
+    append!(out, build_val_setters(t, set_block))    
     push!(out, check_abstract_def)
     push!(out, :($TyOOP.ootype_mro(::$Type{<:$t}) = $mro_expr))
     push!(out, @q begin
             function $Base.getproperty(this::$cur_mod.$t, prop::$Symbol)
-                $(Expr(:meta, :inline))
+                $(Expr(:meta, :aggressive_constprop, :inline))
                 $ln
                 $getter_body
             end
     
             function $Base.setproperty!(this::$cur_mod.$t, prop::$Symbol, value)
-                $(Expr(:meta, :inline))
+                $(Expr(:meta, :aggressive_constprop, :inline))
                 $ln
                 $setter_body
             end
