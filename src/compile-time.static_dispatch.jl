@@ -83,7 +83,12 @@ function _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, 
                 :($Base.getfield($this, $(QuoteNode(sym)))))
             push_setter!(
                 QuoteNode(sym) =>
-                :($Base.setfield!($this, $(QuoteNode(sym)), value)))
+                @q let this = $this
+                    $Base.setfield!(
+                        this,
+                        $(QuoteNode(sym)),
+                        $convert($fieldtype(typeof(this), $(QuoteNode(sym))), value))
+                end)
         @case [head, path...]
             _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, :($TyOOP.get_base($this, $head)), path, sym)
     end

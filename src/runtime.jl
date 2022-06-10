@@ -70,7 +70,7 @@ end
     Base.getfield(x, base_field(T, t))
 end
 
-function base_field(T, t)
+Base.@pure function base_field(T, t)
     error("type $T has no base type $t")
 end
 

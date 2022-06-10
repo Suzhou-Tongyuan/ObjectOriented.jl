@@ -5,7 +5,8 @@ using TyOOP
     attr::Int
 
     function new(arg::Int)
-        # @construct宏，用来设置字段和基类
+
+        # @construct宏：设置字段和基类
         @construct begin
             attr = arg
         end
@@ -19,8 +20,8 @@ end
 c = MyClass(1)
 c.attr
 
-
 c.f()
+
 @code_typed c.f()
 
 ## 继承
@@ -111,7 +112,7 @@ sq = Square(25)
 sq.side
 sq.side = 4
 sq.area
-sq.area = 36 # error, no implicit conversion
+sq.area = 36
 sq.area = 36.0
 sq.side
 
@@ -120,7 +121,7 @@ sq.side
 using TyOOP
 
 @oodef struct AbstractMLModel{X, Y}
-    function fit end
+    function fit! end
     function predict end
 end
 
@@ -156,9 +157,10 @@ end
 clf = LsqModel(model, [0.5, 0.5])
 ptrue = [1.0, 2.0]
 xdata = collect(range(0, stop = 10, length = 20))
-ydata = collect(model(xdata, ptrue) + 0.001 * randn(length(xdata)))
+ydata = collect(model(xdata, ptrue) + 0.01 * randn(length(xdata)))
 clf.fit!(xdata, ydata)
 clf.predict(xdata)
+clf.param
 
 # 比如ScikitLearnBase提供了fit!函数和predict函数
 
@@ -175,5 +177,8 @@ ScikitLearnBase.predict(clf, xdata)
 isinstance(clf, LsqModel)
 isinstance(clf, AbstractMLModel)
 issubclass(LsqModel, AbstractMLModel)
+
+function f2(_::@like(AbstractMLModel))
+end
 
 ## Julia类型标注不支持子类、父类转换（Python没有type assertion，不需要写标注），要使用@like宏支持接口参数

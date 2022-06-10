@@ -297,7 +297,7 @@ TyOOP.check_abstract(AbstractSizedContainer)
     end
 
     # if no annotations for 'self',
-    # annotations and type parameters are added like:
+    # annotations and type parameters can be added like:
     # 'function contains(self :: @like(MySet{E}), e::E) where E' 
     function contains(self, e::E)
         return e in self.inner

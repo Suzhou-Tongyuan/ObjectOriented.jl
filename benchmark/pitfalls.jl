@@ -1,6 +1,5 @@
-"""
 ## 类型不稳定 1：字段
-"""
+
 mutable struct X
     a::Any
 end
@@ -18,7 +17,7 @@ end
 function sum2(xs::AbstractVector{X})
     s = 0
     for x in xs
-        s += x.a::Int
+        s += x.a :: Int
     end
     return s
 end
@@ -105,6 +104,7 @@ def fpython(n):
 ## 类型不稳定 3：类型不稳定的全局变量
 
 int64_t = Int
+float64_t = Float64
 scalar = 3
 
 function sum_ints1(xs::Vector)
@@ -156,6 +156,7 @@ data = [i % 2 == 0 ? 1 : "2" for i = 1:1000000]
 ## 可以用`@code_warntype`看到性能问题：
 
 @code_warntype sum_ints1(data)
+@code_warntype sum_ints2(data)
 
 
 ## 顶层作用域性能问题
@@ -163,6 +164,7 @@ data = [i % 2 == 0 ? 1 : "2" for i = 1:1000000]
 xs = ones(Int, 1000000)
 t0 = time_ns()
 s = 0
+
 for each in xs
     s += each
 end
@@ -180,4 +182,4 @@ println("time elapsed: ", time_ns() - t0, "ns")
     return s
 end
 test_loop(xs) === 1000000
-# time elapsed: 433_500ns
+# time elapsed: 1_095_200ns
