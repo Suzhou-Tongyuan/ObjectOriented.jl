@@ -33,9 +33,25 @@ end
 
 ```
 
-`InteractiveUtils.@code_llvm sum1(xs)`或者 `InteractiveUtils.code_llvm(sum1, (typeof(xs1), ))`，可以发现存在 `jl_apply_generic`，这意味着动态分派。
+如果想要检测性能问题，可以使用`@code_warntype`检测类型稳定性，还可以用`@code_llvm`检测是否调用`jl_apply_generic`函数。
 
-Julia的动态分派性能极差。
+`@code_llvm sum1(xs)`或者 `code_llvm(sum1, (typeof(xs1), ))`，可以发现存在 `jl_apply_generic`，这意味着动态分派。
+
+Julia动态分派的性能差。
+
+```julia
+struct SomeType{T}
+    f1::T
+    f2::T
+    f3::T
+end
+
+data = SomeType(1, 2, 3)
+
+function f(x::Any)
+    data.f1 + data.f2 + data.f3
+end
+```
 
 ## 类型不稳定 2： 数组类型
 

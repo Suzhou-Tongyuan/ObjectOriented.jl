@@ -117,6 +117,8 @@ sq.side
 
 ## 泛型和接口
 
+using TyOOP
+
 @oodef struct AbstractMLModel{X, Y}
     function fit end
     function predict end
@@ -152,8 +154,9 @@ end
 # 例子来自 https://github.com/JuliaNLSolvers/LsqFit.jl
 @. model(x, p) = p[1] * exp(-x * p[2])
 clf = LsqModel(model, [0.5, 0.5])
+ptrue = [1.0, 2.0]
 xdata = collect(range(0, stop = 10, length = 20))
-ydata = collect(model(xdata, [1.0 2.0]) + 0.01 * randn(length(xdata)))
+ydata = collect(model(xdata, ptrue) + 0.001 * randn(length(xdata)))
 clf.fit!(xdata, ydata)
 clf.predict(xdata)
 
