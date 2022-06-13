@@ -5,7 +5,7 @@ export Object, BoundMethod, Property
 export construct, shape_type
 export ootype_bases, ootype_mro
 export direct_fields, direct_methods, base_field, getproperty_fallback, setproperty_fallback!
-export get_base, check_abstract, issubclass, isinstance
+export get_base, set_base!, check_abstract, issubclass, isinstance
 export getproperty_typed, setproperty_typed!
 
 export @typed_access
@@ -70,6 +70,10 @@ end
     Base.getfield(x, base_field(T, t))
 end
 
+@inline function set_base!(x::T, base::BaseType) where {T, BaseType}
+    Base.setfield!(x, base_field(T, BaseType), base)
+end
+
 Base.@pure function base_field(T, t)
     error("type $T has no base type $t")
 end
@@ -93,7 +97,7 @@ end
 _unwrap(::Type{InitField{Sym, Base}}) where {Sym, Base} = (Sym, Base)
 _unwrap(x) = nothing
 
-function _find_index(arr, x)
+function _find_index(@nospecialize(arr), @nospecialize(x))
     for i in 1:length(arr)
         e = arr[i]
         if e == x
@@ -155,7 +159,5 @@ end
 @generated function construct(::Type{T}, args...) where T
     _construct(T, args)
 end
-
-function New end
 
 end # module

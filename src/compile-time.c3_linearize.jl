@@ -12,9 +12,9 @@ function cls_linearize(::Type{root}) where root
     resolved
 end
 
-function cls_linearize(bases::Vector)
+function cls_linearize(bases::Vector)::Vector{Tuple{Type, Tuple}}
     chains = [[fix_path(base, t, path) for (t, path) in TyOOP.ootype_mro(base)] for base in bases]
-    linearize(Tuple{Any, Tuple}, chains) do l, r
+    linearize(Tuple{Type, Tuple}, chains) do l, r
         l[1] === r[1]
     end
 end

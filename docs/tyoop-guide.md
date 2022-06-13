@@ -59,6 +59,26 @@ end
 
 构造器可以被重载。对于空间占用为0的结构体(单例类型)，构造器可以省略。
 
+### Python风格的构造器
+
+以往的OO语言，如Python/C++/Java/C#，没有原生的不可变类型，因此构造器函数一般设计为
+1. 创建一个新对象`self`(或this)
+2. 利用构造器参数对`self`进行初始化
+
+Julia也支持这样的构造方式，但只对`mutable struct`有效。写法如下:
+
+```julia
+@oodef mutable struct MySubclass <: {MySuperclass1, MySuperclass2}
+    field1
+    function new()
+        self = new()
+        set_base!(self, MySuperclass1()) # 初始化基类 MySuperclass1
+        set_base!(self, MySuperclass2()) # 初始化基类 MySuperclass2
+        self.field1 = ... # 初始化字段
+        return self
+    end
+```
+
 ## 实例方法
 
 实例方法须以`function 方法名(类实例, ...)`开头。类实例变量推荐写为`self`。
@@ -273,7 +293,7 @@ square.side # => 4.0
     # 定义一个抽象方法
     function contains end
 
-    
+
     # 定义一个抽象getter
     @property(length) do
         get
@@ -298,11 +318,11 @@ TyOOP.check_abstract(AbstractSizedContainer)
 
     # if no annotations for 'self',
     # annotations and type parameters can be added like:
-    # 'function contains(self :: @like(MySet{E}), e::E) where E' 
+    # 'function contains(self :: @like(MySet{E}), e::E) where E'
     function contains(self, e::E)
         return e in self.inner
     end
-    
+
     @property(length) do
         get = self -> length(self.inner)
     end
@@ -372,7 +392,7 @@ end
 ```julia
 @oodef struct MyList{T} <: HasLength
     inner :: Vector{T}
-    
+
     function new(elts::T...)
         @construct begin
             inner = collect(T, elts)

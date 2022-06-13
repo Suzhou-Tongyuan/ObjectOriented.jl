@@ -59,18 +59,18 @@ function build_multiple_dispatch!(
     push!(out,
         :($TyOOP.direct_methods(::$Type{<:$t}) = $(QuoteNode(method_dict))))
 
-    
+
     build_multiple_dispatch2!(ln, cgi)
 end
 
 function build_multiple_dispatch2!(ln::LineNumberNode, cgi::CodeGenInfo)
+    t = cgi.typename
     out = cgi.outblock
     valid_fieldnames = cgi.fieldnames
-    t = cgi.typename
-    
+
     push!(out, ln)
     push!(out,
-        :($TyOOP.direct_fields(::Type{<:$t}) = $(QuoteNode(valid_fieldnames))))
+        :($TyOOP.direct_fields(::Type{<:$t}) = $(Expr(:tuple, QuoteNode.(valid_fieldnames)...))))
 
     build_multiple_dispatch3!(ln, cgi)
 end
@@ -148,26 +148,29 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     get_block = []
     set_block = []
     abstract_methods = Dict{PropertyName, PropertyDefinition}()
-    
+
     push_getter!(x) = push!(get_block, x)
     push_setter!(x) = push!(set_block, x)
     subclass_block = []
-    
     mro = cls_linearize(collect(keys(cgi.base_dict)))
-    pushfirst!(mro, (:($(cgi.cur_mod).$(cgi.typename)), ()))
-    mro_expr = :[$([Expr(:tuple, k, v) for (k, v) in mro]...)]
     
-    _direct_fields(base :: Expr) = cgi.fieldnames
-    _direct_fields(base::Type) = TyOOP.direct_fields(base)
-    _direct_methods(base :: Expr) = cgi.method_dict
-    _direct_methods(base :: Type) = TyOOP.direct_methods(base)
+    mro_expr = let res = :([])
+        push!(res.args, :($(cgi.cur_mod).$(cgi.typename), ()))
+        append!(res.args, [Expr(:tuple, k, v) for (k, v) in mro])
+        res
+    end
 
-    for (base, path_tuple) in mro
+    function process_each!(
+        base::Union{Expr, Type},
+        path_tuple::(NTuple{N, Type} where N),
+        _direct_fields::(NTuple{N, Symbol} where N),
+        _direct_methods :: AbstractDict{PropertyName, PropertyDefinition}
+    )
         path = Any[path_tuple...]
         push!(
             subclass_block,
             :($Base.@inline $TyOOP.issubclass(::$Type{<:$cur_mod.$t}, ::$Type{<:$base}) = true))
-        for fieldname :: Symbol in _direct_fields(base)
+        for fieldname :: Symbol in _direct_fields
             if @getter_prop(fieldname) in defined
                 continue
             end
@@ -175,7 +178,7 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
             _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, :this, path, fieldname)
         end
 
-        for (methodname :: PropertyName, desc :: PropertyDefinition) in _direct_methods(base)
+        for (methodname :: PropertyName, desc :: PropertyDefinition) in _direct_methods
             def = desc.def
             @switch (desc.kind, _is_abstract(desc)) begin
                 @case (MethodKind, true)
@@ -203,6 +206,13 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
         end
     end
 
+    # build resolution table (specifically, the bodies of getter and setter)
+    process_each!(:($(cgi.cur_mod).$(cgi.typename)), (), Tuple(cgi.fieldnames), cgi.method_dict)
+    for (base, path_tuple) in mro
+        process_each!(base, path_tuple, TyOOP.direct_fields(base), TyOOP.direct_methods(base))
+    end
+
+    # detect all unimplemented abstract methods
     for implemented in intersect(Set{PropertyName}(keys(abstract_methods)), defined)
         delete!(abstract_methods, implemented)
     end
@@ -213,28 +223,38 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
 
     getter_body = build_if(get_block, :($TyOOP.getproperty_fallback(this, prop)))
     setter_body = build_if(set_block, :($TyOOP.setproperty_fallback!(this, prop, value)))
-    propertynames = Symbol[k.name for k in defined]
-    expr_propernames = Expr(:tuple, [QuoteNode(e) for e in unique!(propertynames)]...)
+    expr_propernames = Expr(:tuple, QuoteNode.(unique!(Symbol[k.name for k in defined]))...)
     out = cgi.outblock
+
+    # codegen
+
     push!(out, ln)
     append!(out, subclass_block)
+
+    ## for '@typed_access'
     append!(out, build_val_getters(t, get_block))
-    append!(out, build_val_setters(t, set_block))    
+    append!(out, build_val_setters(t, set_block))
+    
+
     push!(out, check_abstract_def)
+
+    ## mro
     push!(out, :($TyOOP.ootype_mro(::$Type{<:$t}) = $mro_expr))
+
+    ## codegen getter and setter
     push!(out, @q begin
             function $Base.getproperty(this::$cur_mod.$t, prop::$Symbol)
                 $(Expr(:meta, :aggressive_constprop, :inline))
                 $ln
                 $getter_body
             end
-    
+
             function $Base.setproperty!(this::$cur_mod.$t, prop::$Symbol, value)
                 $(Expr(:meta, :aggressive_constprop, :inline))
                 $ln
                 $setter_body
             end
-    
+
             function $Base.propertynames(::$Type{<:$cur_mod.$t})
                 $(Expr(:meta, :inline))
                 $ln

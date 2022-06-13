@@ -87,11 +87,16 @@ end
     m_power::String
 
     function new(speed::Float64, rooms::Int, power::String = "oil")
-        @construct begin
-            @base(Bus) = Bus(speed)
-            @base(House) = House(rooms)
-            m_power = power
-        end
+        self = new()
+        self.m_power = power
+        set_base!(self, Bus(speed))
+        set_base!(self, House(rooms))
+        return self
+        # @construct begin
+        #     @base(Bus) = Bus(speed)
+        #     @base(House) = House(rooms)
+        #     m_power = power
+        # end
     end
 
     function get_power(self)

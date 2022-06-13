@@ -193,9 +193,12 @@ module structdef
         # constructor overloading
         # 重载构造器
         function new(vec :: Vector{T})
-            @construct begin
-                inner = vec
-            end
+            self = new{T}()
+            self.inner = vec
+            return self
+            # @construct begin
+            #     inner = vec
+            # end
         end
 
         function getindex(self, i::Integer)
