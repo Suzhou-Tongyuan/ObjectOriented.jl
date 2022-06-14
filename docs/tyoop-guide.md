@@ -361,6 +361,27 @@ end
 end
 ```
 
+### 显式泛型类型参数
+
+下面的代码给出一个特别的例子，构造器`new`无法从参数类型推断出`MyGenType{A}`中的泛型类型参数`A`。
+
+```julia
+@oodef struct MyGenType{A}
+    a :: Int
+    function new(a::Int)
+        new{A}(a)
+    end
+end
+```
+
+在这种情况下，可以显式指定泛型类型参数，构造类型实例：
+
+```julia
+my_gen_type = MyGenType{String}(1)
+my_gen_type = MyGenType{Number}(1)
+my_gen_type = MyGenType{Vector{Int}}(1)
+```
+
 ## 高级特性：接口
 
 TyOOP支持接口编程：使用`@oodef struct`定义一个没有字段的结构体类型，为它添加一些抽象方法，这样就实现了接口。

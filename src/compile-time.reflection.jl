@@ -318,6 +318,9 @@ function parse_parameter!(ln :: LineNumberNode, self::ParamInfo, p, support_tupl
         @case Expr(:kw, p, b)
             self.defaultVal = b
             parse_parameter!(ln, self, p, support_tuple_parameters)
+        @case :(:: $t)
+            self.type = t
+            nothing
         @case :($p :: $t)
             self.type = t
             parse_parameter!(ln, self, p, support_tuple_parameters)
@@ -368,7 +371,7 @@ function parse_function(ln :: LineNumberNode, ex; fallback :: T = _undefined,  a
                 throw(create_exception(ln, "lambda functions are not allowed here: $ex"))
             end
             self.body = body
-            self.isAbstract = false # unnecessary but clarified
+            self.isAbstract = false
             parse_function_header!(ln, self, header; is_lambda = true, allow_lambda = true)
             return self
         @case Expr(:(=), Expr(:call, _...) && header, rhs)

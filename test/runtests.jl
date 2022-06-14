@@ -265,6 +265,28 @@ module structdef
         f(x) = @typed_access x.a
         @test Int == (InteractiveUtils.@code_typed f(x)).second
     end
+
+    @oodef struct TestMissingParameterName{T}
+        function new(::Type{T})
+            new{T}()
+        end
+    end
+
+    @testset "test missing parameter names" begin
+        x = TestMissingParameterName(Int)
+        @test x isa TestMissingParameterName{Int}
+    end
+
+    @oodef struct TestCurlyTypeApplication{T}
+        function new()
+            new{T}()
+        end
+    end
+
+    @testset "test curly type application" begin
+        x = TestCurlyTypeApplication{Int}()
+        @test x isa TestCurlyTypeApplication{Int}
+    end
 end
 
 include("example.jl")
