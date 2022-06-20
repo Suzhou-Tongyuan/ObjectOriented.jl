@@ -184,8 +184,10 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             each.name = typename
             push!(struct_block, each.ln)
             push!(struct_block, to_expr(each))
-            each.name = class_ann
-            push!(struct_block, to_expr(each))
+            if !isempty(type_def.typePars)
+                each.name = class_ann
+                push!(struct_block, to_expr(each))
+            end
             custom_init = true
             continue
         end
