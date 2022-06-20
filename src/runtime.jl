@@ -40,7 +40,7 @@ typed_access(x) = x
 
 function typed_access(ex::Expr)
     @match ex begin
-        :($a.$(b::Symbol) = $c) => :($setproperty_typed!($(typed_access(a)), typed_access(c), $(QuoteNode(Val(b)))))
+        :($a.$(b::Symbol) = $c) => :($setproperty_typed!($(typed_access(a)), $(typed_access(c)), $(QuoteNode(Val(b)))))
         :($a.$(b::Symbol)) => :($getproperty_typed($(typed_access(a)), $(QuoteNode(Val(b)))))
         Expr(head, args...) => Expr(head, typed_access.(args)...)
     end
