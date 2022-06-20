@@ -287,6 +287,15 @@ module structdef
         x = TestCurlyTypeApplication{Int}()
         @test x isa TestCurlyTypeApplication{Int}
     end
+
+    @testset "qualified field types" begin
+        @oodef struct QualifiedFieldType
+            b :: Core.Builtin
+            function get_a(self)
+                1
+            end
+        end
+    end
 end
 
 include("example.jl")

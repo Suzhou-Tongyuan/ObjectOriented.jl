@@ -178,9 +178,9 @@ end
 
 function parse_type_repr(ln::LineNumberNode, repr)
     @switch repr begin
-        @case :($typename{$(generic_params...)}) && if typename isa Symbol end
+        @case :($typename{$(generic_params...)})
             return TypeRepr(typename, Tuple(parse_type_repr(ln, x) for x in generic_params))
-        @case typename::Symbol
+        @case typename
             return TypeRepr(typename, ())
         @case _
             throw(create_exception(ln, "invalid type representation: $repr"))
