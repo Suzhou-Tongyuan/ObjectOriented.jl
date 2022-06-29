@@ -90,6 +90,8 @@ Snake <: Animal # false
 Snake("xxx") isa Animal # false
 ```
 
+记住，Julia原生类型系统并不理解两个class的子类型关系！详见[基于接口的多态抽象](#7-基于接口的多态抽象)。
+
 你应该使用下列方法测试继承关系：
 ```julia
 issubclass(Snake, Animal) # true
@@ -159,7 +161,7 @@ check_abstract(MyVector)
 #   allvalue (setter) => PropertyDefinition(:allvalue, missing, :((Main).Fillable), SetterPropertyKind)
 ```
 
-`isempty(check_abstract(MyVector))`不为`true`表示`MyVector`不是抽象类型，需要实现相应属性或方法`len`, `fill!`和`allvalue`。
+`isempty(check_abstract(MyVector))`不为`true`，表示`MyVector`是抽象类型，需要实现相应属性或方法`len`, `fill!`和`allvalue`。
 
 
 ```julia
