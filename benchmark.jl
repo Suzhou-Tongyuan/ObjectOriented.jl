@@ -17,7 +17,7 @@ end
 @oodef mutable struct Bus <: Vehicle
     function new(speed::Float64)
         @mk begin
-            @base(Vehicle) = Vehicle(speed)
+            Vehicle(speed)
         end
     end
 
@@ -43,7 +43,7 @@ end
     
     function new(rooms::Int)
         @mk begin
-            # @base(IHouse) = IHouse()
+            # IHouse()
             m_rooms = rooms
         end
     end
@@ -72,8 +72,7 @@ end
     
     function new(speed::Float64, rooms::Int, power :: String = "oil")
         @mk begin
-            @base(Bus) = Bus(speed)
-            @base(House) = House(rooms)
+            Bus(speed), House(rooms)
             m_power = power
         end
     end
@@ -99,7 +98,7 @@ end
     
     function new(speed::Float64)
         @mk begin
-            @base(Bus) = Bus(speed)
+            Bus(speed)
             m_power="electricity"
         end
     end

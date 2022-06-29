@@ -338,3 +338,19 @@ ScikitLearnBase.predict(clf::@like(AbstractMLModel{X}), x::X) where X = clf.pred
 ScikitLearnBase.fit!(clf, xdata, ydata)
 ScikitLearnBase.predict(clf, xdata)
 ```
+
+### 9. 性能问题
+
+TyOOP本身和Julia原生代码一样快，但由于[点操作符`Base.getproperty`的类型推断问题](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm)，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
+
+这可能带来性能问题。出现该问题的情况是有限的，问题场合如下：
+
+1. 使用Python风格的property
+2. 在method里访问另一个成员，该成员再次递归调用点操作符
+
+解决方案也很简单，使用`@typed_access`标注可能出现性能问题的代码即可。
+
+```julia
+@typed_access my_instance.method()
+@typed_access my_instance.property
+```
