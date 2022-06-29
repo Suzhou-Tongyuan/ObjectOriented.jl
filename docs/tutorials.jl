@@ -6,8 +6,8 @@ using TyOOP
 
     function new(arg::Int)
 
-        # @construct宏：设置字段和基类
-        @construct begin
+        # @mk宏：设置字段和基类
+        @mk begin
             attr = arg
         end
     end
@@ -30,7 +30,7 @@ c.f()
     attr::Int # shadowing
     function new(attr_base, attr)
         a = attr + 1
-        @construct begin
+        @mk begin
             @base(MyClass) = MyClass(attr_base)
             attr = a
         end
@@ -86,7 +86,7 @@ get_base(Sub1(), Base3).func()
     area::Float64
 
     function new(area::Number)
-        @construct begin
+        @mk begin
             area = convert(Float64, area)
         end
     end
@@ -131,7 +131,7 @@ using LsqFit
     model::M
     param::Vector{Float64}
     function new(m::M, init_param::Vector{Float64})
-        @construct begin
+        @mk begin
             model = m
             param = init_param
         end

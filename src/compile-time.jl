@@ -1,5 +1,5 @@
 module CompileTime
-export @oodef, @construct, @base, @property
+export @oodef, @mk, @base, @property
 export PropertyName, like, @like
 
 if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))

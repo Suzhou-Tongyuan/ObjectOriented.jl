@@ -100,7 +100,7 @@ end
     TyOOP.RunTime.InitField{TyOOP.base_field(generic_type, X), X}()
 end
 
-macro construct()
+macro mk()
     esc(@q begin
         $__source__
         $TyOOP.construct($sym_generic_type)
@@ -140,7 +140,7 @@ function _mk_arguments!(__module__::Module, __source__::LineNumberNode, argument
     end
 end
 
-macro construct(ex)
+macro mk(ex)
     arguments = []
     ln = __source__
     @switch ex begin
@@ -298,7 +298,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                     function $typename()
                         $cur_line
                         $sym_generic_type = $class_ann
-                        $(Expr(:macrocall, getfield(TyOOP, Symbol("@construct")), cur_line))
+                        $(Expr(:macrocall, getfield(TyOOP, Symbol("@mk")), cur_line))
                     end
                 end
             end

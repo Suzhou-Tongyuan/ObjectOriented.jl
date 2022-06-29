@@ -26,7 +26,7 @@ using TyOOP
 @oodef struct MyStruct
     a :: Int
     function new(a::Int)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -38,7 +38,7 @@ end
 @oodef mutable struct MyClass
     a :: Int
     function new(a::Int)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -51,7 +51,7 @@ end
 ## 类型构造器
 
 上述代码中，`function new(...)`用于定义构造器。
-构造器的返回值应当使用`@construct begin ... end`构造一个当前类型的实例，其中，`begin`语句块中使用`字段名=值`初始化字段。
+构造器的返回值应当使用`@mk begin ... end`构造一个当前类型的实例，其中，`begin`语句块中使用`字段名=值`初始化字段。
 
 缺省构造器的行为：
 - 当类型为`class`，所有字段未初始化。
@@ -124,7 +124,7 @@ end
 @oodef struct C <: {A, B}
     c :: String
     function new(a::Int, b::Int, c::String = "somestring")
-        @construct begin
+        @mk begin
             A(a), B(b)
             c = c
         end
@@ -136,7 +136,7 @@ c = C(1, 2)
 @assert c.b === 2
 ```
 
-可以看到，我们使用在`@construct`块中使用`Base1(arg1, arg2), Base2(arg1, arg2)`来设置基类，这和Python中的`基类.__init__(self, args...)`一致。
+可以看到，我们使用在`@mk`块中使用`Base1(arg1, arg2), Base2(arg1, arg2)`来设置基类，这和Python中的`基类.__init__(self, args...)`一致。
 
 一个子类可以继承多个基类，当多个基类出现重名属性时，使用C3线性化算法进行method resolution。
 
@@ -189,7 +189,7 @@ end
     center :: Point
 
     function new(width::Float64, height::Float64, center::Point)
-        @construct begin
+        @mk begin
             width = width
             height = height
             center = center
@@ -263,7 +263,7 @@ DemoProp().value = 200 # => setting 200
 @oodef mutable struct Square
     side :: Float64
     function new(side::Number)
-        @construct begin
+        @mk begin
             side = convert(Float64, side)
         end
     end
@@ -310,7 +310,7 @@ TyOOP.check_abstract(AbstractSizedContainer)
 @oodef struct MyNumSet{E <: Number} <: AbstractSizedContainer{E}
     inner :: Set{E}
     function new(args::E...)
-        @construct begin
+        @mk begin
             inner = Set{E}(args)
         end
     end
@@ -414,7 +414,7 @@ end
     inner :: Vector{T}
 
     function new(elts::T...)
-        @construct begin
+        @mk begin
             inner = collect(T, elts)
         end
     end

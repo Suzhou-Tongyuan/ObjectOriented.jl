@@ -11,7 +11,7 @@ export getproperty_typed, setproperty_typed!
 export @typed_access
 
 """
-用来实现`@construct`宏。
+用来实现`@mk`宏。
 该单例类型传递给generated function `construct`，
 用来对任意结构体构造零开销、参数无序的构造器。
 
@@ -77,7 +77,7 @@ end
 @oodef mutable struct A
     a :: Int
     function new(a::Int)
-        @construct begin
+        @mk begin
             a = 1
         end
     end
@@ -87,7 +87,7 @@ end
     b :: Int
 
     function new(a::Int, b::Int)
-        @construct begin
+        @mk begin
             @base(A) = A(a)
             b = 1
         end

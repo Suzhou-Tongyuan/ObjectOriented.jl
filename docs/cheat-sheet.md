@@ -14,7 +14,7 @@ TyOOP为Julia提供面向对象编程的功能，支持多继承、点操作符�
     y :: Int
 
     function new(x::Int, y::Int) 
-        @construct begin
+        @mk begin
             x = x
             y = y
         end
@@ -27,7 +27,7 @@ x = d.x
 
 其中，`new`是构造器函数。构造器和方法都可以重载。
 
-`@construct`语句块产生当前类型的实例，在随后的语句块中，形如`a = b`是设置字段，形如`BaseClass(arg1, arg2)`是基类初始化。
+`@mk`语句块产生当前类型的实例，在随后的语句块中，形如`a = b`是设置字段，形如`BaseClass(arg1, arg2)`是基类初始化。
 
 定义可变的OO结构体（class）。
 
@@ -37,7 +37,7 @@ x = d.x
     y :: Int
 
     function new(x::Int, y::Int) 
-        @construct begin
+        @mk begin
             x = x
             y = y
         end
@@ -54,7 +54,7 @@ mt.x += 1
 @oodef mutable struct Animal
     name :: String
     function new(theName::String)
-        @construct begin
+        @mk begin
             name = theName
         end
     end
@@ -66,7 +66,7 @@ end
 
 @oodef mutable struct Snake <: Animal
     function new(theName::String)
-        @construct begin
+        @mk begin
             Animal(theName) # 初始化基类
         end
     end
@@ -146,7 +146,7 @@ end
 @oodef struct MyVector{T} <: {HasLength, Fillable}  # 多继承
     xs :: Vector{T}
     function new(xs::Vector{T})
-        @construct begin
+        @mk begin
             xs = xs
         end
     end
@@ -167,7 +167,7 @@ check_abstract(MyVector)
     # 旧代码
     xs :: Vector{T}
     function new(xs::Vector{T})
-        @construct begin
+        @mk begin
             xs = xs
         end
     end
@@ -222,7 +222,7 @@ end
 
 @oodef struct D <: {A, C, B}
     function new()
-        @construct begin
+        @mk begin
             A() # 可省略，因为A是接口类型
             B() # 可省略，因为B是接口类型
             C() # 不可省略，因为C是可变类型
@@ -294,7 +294,7 @@ using LsqFit
     model::M  # 一个函数，代表模型的公式
     param::Vector{Float64}
     function new(m::M, init_param::Vector{Float64})
-        @construct begin
+        @mk begin
             model = m
             param = init_param
         end

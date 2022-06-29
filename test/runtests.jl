@@ -26,14 +26,14 @@ module structdef
         a :: Int
         b :: Int
         function new(a::Int, b::Int = 3) # new用来定义OO类型的构造器
-            @construct begin
+            @mk begin
                 a = a
                 b = b
             end
         end
 
         function new(;a::Int, b::Int = 3) # new可以重载
-            @construct begin
+            @mk begin
                 a = a
                 b = b
             end
@@ -54,7 +54,7 @@ module structdef
     @oodef struct B <: A
         c :: Int
         function new(a :: Int, b :: Int, c :: Int)
-            @construct begin
+            @mk begin
                 A(a, b)
                 c = c
             end
@@ -111,7 +111,7 @@ module structdef
     @oodef mutable struct B34 <: {A3, A4}
         x :: Int
         function new(x)
-            @construct begin
+            @mk begin
                 #= empty struct bases can be omitted: =#
                 #= 空结构体基类可以省略： =#
                 # @base(A3) = A3()
@@ -185,7 +185,7 @@ module structdef
         inner :: Vector{T}
 
         function new(args :: T...)
-            @construct begin
+            @mk begin
                 inner = collect(args)
             end
         end
@@ -196,7 +196,7 @@ module structdef
             self = new{T}()
             self.inner = vec
             return self
-            # @construct begin
+            # @mk begin
             #     inner = vec
             # end
         end

@@ -4,7 +4,7 @@
 @oodef mutable struct Base1
     a :: Any
     function new(a::Any)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -17,7 +17,7 @@ end
 @oodef mutable struct Base2 <: Base1
     b :: Any
     function new(a::Any, b::Any)
-        @construct begin
+        @mk begin
             @base(Base1) = Base1(a)
             b = b
         end
@@ -31,7 +31,7 @@ end
 @oodef mutable struct Base3 <: Base2
     c :: Any
     function new(a::Any, b::Any, c::Any)
-        @construct begin
+        @mk begin
             @base(Base2) = Base2(a, b)
             c = c
         end
@@ -45,7 +45,7 @@ end
 @oodef mutable struct Base4 <: Base3
     d :: Any
     function new(a::Any, b::Any, c::Any, d::Any)
-        @construct begin
+        @mk begin
             @base(Base3) = Base3(a, b, c)
             d = d
         end
@@ -59,7 +59,7 @@ end
 @oodef mutable struct Base5 <: Base4
     e :: Any
     function new(a::Any, b::Any, c::Any, d::Any, e::Any)
-        @construct begin
+        @mk begin
             @base(Base4) = Base4(a, b, c, d)
             e = e
         end
@@ -126,7 +126,7 @@ class_o = Base5(1, 2, 3, 4, 5)
 @oodef struct Base1
     a :: Any
     function new(a::Any)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -139,7 +139,7 @@ end
 @oodef struct Base2 <: Base1
     b :: Any
     function new(a::Any, b::Any)
-        @construct begin
+        @mk begin
             @base(Base1) = Base1(a)
             b = b
         end
@@ -153,7 +153,7 @@ end
 @oodef struct Base3 <: Base2
     c :: Any
     function new(a::Any, b::Any, c::Any)
-        @construct begin
+        @mk begin
             @base(Base2) = Base2(a, b)
             c = c
         end
@@ -167,7 +167,7 @@ end
 @oodef struct Base4 <: Base3
     d :: Any
     function new(a::Any, b::Any, c::Any, d::Any)
-        @construct begin
+        @mk begin
             @base(Base3) = Base3(a, b, c)
             d = d
         end
@@ -181,7 +181,7 @@ end
 @oodef struct Base5 <: Base4
     e :: Any
     function new(a::Any, b::Any, c::Any, d::Any, e::Any)
-        @construct begin
+        @mk begin
             @base(Base4) = Base4(a, b, c, d)
             e = e
         end

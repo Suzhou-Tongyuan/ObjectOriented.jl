@@ -6,7 +6,7 @@ const T = Any
 @oodef struct Base1
     a :: T
     function new(a::T)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -19,7 +19,7 @@ end
 @oodef struct Base2 <: Base1
     b :: T
     function new(a::T, b::T)
-        @construct begin
+        @mk begin
             @base(Base1) = Base1(a)
             b = b
         end
@@ -33,7 +33,7 @@ end
 @oodef struct Base3 <: Base2
     c :: T
     function new(a::T, b::T, c::T)
-        @construct begin
+        @mk begin
             @base(Base2) = Base2(a, b)
             c = c
         end
@@ -47,7 +47,7 @@ end
 @oodef struct Base4 <: Base3
     d :: T
     function new(a::T, b::T, c::T, d::T)
-        @construct begin
+        @mk begin
             @base(Base3) = Base3(a, b, c)
             d = d
         end
@@ -61,7 +61,7 @@ end
 @oodef struct Base5 <: Base4
     e :: T
     function new(a::T, b::T, c::T, d::T, e::T)
-        @construct begin
+        @mk begin
             @base(Base4) = Base4(a, b, c, d)
             e = e
         end
@@ -109,7 +109,7 @@ const T = Any
 @oodef mutable struct Base1
     a :: T
     function new(a::T)
-        @construct begin
+        @mk begin
             a = a
         end
     end
@@ -122,7 +122,7 @@ end
 @oodef mutable struct Base2 <: Base1
     b :: T
     function new(a::T, b::T)
-        @construct begin
+        @mk begin
             @base(Base1) = Base1(a)
             b = b
         end
@@ -136,7 +136,7 @@ end
 @oodef mutable struct Base3 <: Base2
     c :: T
     function new(a::T, b::T, c::T)
-        @construct begin
+        @mk begin
             @base(Base2) = Base2(a, b)
             c = c
         end
@@ -150,7 +150,7 @@ end
 @oodef mutable struct Base4 <: Base3
     d :: T
     function new(a::T, b::T, c::T, d::T)
-        @construct begin
+        @mk begin
             @base(Base3) = Base3(a, b, c)
             d = d
         end
@@ -164,7 +164,7 @@ end
 @oodef mutable struct Base5 <: Base4
     e :: T
     function new(a::T, b::T, c::T, d::T, e::T)
-        @construct begin
+        @mk begin
             @base(Base4) = Base4(a, b, c, d)
             e = e
         end
