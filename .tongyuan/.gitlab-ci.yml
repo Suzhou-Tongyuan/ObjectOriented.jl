@@ -1,0 +1,43 @@
+# Ideally, we'd love to have a clean-room from-scratch build using docker runner, but that needs
+# more time to setup the infra, here we use the shell runner as a temporary solution.
+include:
+  - 'http://172.16.1.35:6688/chenjiuning/julia-ci-template/raw/master/v1.shell.yml'
+
+UnitTest:1.5:
+  variables:
+    julia_version: "1.5"
+  tags:
+    - shell
+  extends:
+    - .julia
+    - .test
+
+UnitTest:1.6:
+  variables:
+    julia_version: "1.6"
+  tags:
+    - shell
+  extends:
+    - .julia
+    - .test
+
+UnitTest:1:
+  variables:
+    julia_version: "1"
+  tags:
+    - shell
+  extends:
+    - .julia
+    - .test
+
+# Documentation:
+#   stage: deploy
+#   variables:
+#     DOCUMENTER_DEBUG: "true"
+#     julia_version: "1"
+#   script:
+#     - julia-${julia_version} .tongyuan/docs_init.jl
+#     - julia-${julia_version} --project=docs/ docs/make.jl
+#   artifacts:
+#     paths:
+#       - docs/build
