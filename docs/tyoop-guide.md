@@ -125,8 +125,7 @@ end
     c :: String
     function new(a::Int, b::Int, c::String = "somestring")
         @construct begin
-            @base(A) = A(a)
-            @base(B) = B(b)
+            A(a), B(b)
             c = c
         end
     end
@@ -137,7 +136,7 @@ c = C(1, 2)
 @assert c.b === 2
 ```
 
-可以看到，我们使用在`@construct`块中使用`@base(A) = ...`来设置基类，这和Python中的`基类.__init__(self, args...)`一致。
+可以看到，我们使用在`@construct`块中使用`Base1(arg1, arg2), Base2(arg1, arg2)`来设置基类，这和Python中的`基类.__init__(self, args...)`一致。
 
 一个子类可以继承多个基类，当多个基类出现重名属性时，使用C3线性化算法进行method resolution。
 

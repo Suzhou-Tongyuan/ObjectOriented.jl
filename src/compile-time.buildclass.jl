@@ -93,7 +93,11 @@ macro property(f, ex)
 end
 
 macro base(X)
-    esc(:($TyOOP.RunTime.InitField{base_field($sym_generic_type, $X), $X}()))
+    esc(:($TyOOP.RunTime.InitField{$TyOOP.base_field($sym_generic_type, $X), $X}()))
+end
+
+@inline function _base_initfield(generic_type, :: Type{X}) where X
+    TyOOP.RunTime.InitField{TyOOP.base_field(generic_type, X), X}()
 end
 
 macro construct()
@@ -103,24 +107,49 @@ macro construct()
     end)
 end
 
-macro construct(ex)
-    @switch ex begin
-        @case Expr(:block, args...)
+function _mk_arguments!(__module__::Module, __source__::LineNumberNode, arguments::Vector{Any}, ln::LineNumberNode, arg)
+    @switch arg begin
+        @case ::LineNumberNode
+            ln = arg
+            return ln
+        @case Expr(:tuple, args...)
+            for arg in args
+                ln = _mk_arguments!(__module__, __source__, arguments, ln, arg)
+            end
+            return ln
+        @case Expr(:call, _...)
+            sym_basecall = gensym("basecall")
+            push!(arguments, Expr(
+                :block,
+                ln,
+                :($sym_basecall = $arg),
+                :($_base_initfield($sym_generic_type, typeof($sym_basecall)))
+            ))
+            push!(arguments, sym_basecall)
+            return ln
+        @case :($a = $b)
+            a = __module__.macroexpand(__module__, a)
+            if a isa Symbol
+                a =  :($TyOOP.RunTime.InitField{$(QuoteNode(a)), nothing}())
+            end
+            push!(arguments, Expr(:block, ln, a))
+            push!(arguments, Expr(:block, ln, b))
+            return ln
+        @case _
+            error("invalid construction statement $arg")
     end
+end
+
+macro construct(ex)
     arguments = []
     ln = __source__
-    for arg in args
-        @switch arg begin
-            @case ::LineNumberNode
-                ln = arg
-            @case :($a = $b)
-                a = __module__.macroexpand(__module__, a)
-                if a isa Symbol
-                    a =  :($TyOOP.RunTime.InitField{$(QuoteNode(a)), nothing}())
-                end
-                push!(arguments, Expr(:block, ln, a))
-                push!(arguments, Expr(:block, ln, b))
-        end
+    @switch ex begin
+        @case Expr(:block, args...)
+            for arg in args
+                ln = _mk_arguments!(__module__, __source__, arguments, ln, arg)
+            end
+        @case _
+            ln = _mk_arguments!(__module__, __source__, arguments, ln, ex)
     end
     esc(@q begin
         $__source__

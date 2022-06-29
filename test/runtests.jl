@@ -55,7 +55,7 @@ module structdef
         c :: Int
         function new(a :: Int, b :: Int, c :: Int)
             @construct begin
-                @base(A) = A(a, b)
+                A(a, b)
                 c = c
             end
         end

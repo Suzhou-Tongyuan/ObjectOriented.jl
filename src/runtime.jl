@@ -58,14 +58,46 @@ end
 function direct_methods end
 function direct_fields end
 
+"""用户可自定义的默认成员访问方法。
+如果为类型A定义重载此方法，则当类型A无法根据名字`name`找到成员时，该方法被调用。
+"""
 function getproperty_fallback(self, name)
     error("unknown property '$name' for object '$self'")
 end
 
+"""用户可自定义的默认成员赋值方法。
+如果为类型A定义重载此方法，则当类型A无法根据名字`name`找到可以赋值的成员时，该方法被调用。
+"""
 function setproperty_fallback!(self, name, value)
     error("unknown property '$name' for object '$self'")
 end
 
+"""获取实例的基类实例。
+```
+@oodef mutable struct A
+    a :: Int
+    function new(a::Int)
+        @construct begin
+            a = 1
+        end
+    end
+end
+
+@oodef mutable struct B <: A
+    b :: Int
+
+    function new(a::Int, b::Int)
+        @construct begin
+            @base(A) = A(a)
+            b = 1
+        end
+    end
+end
+
+b_inst = B(1, 2)
+a_inst = get_base(b_inst, A) :: A
+```
+"""
 @inline function get_base(x::T, t) where T
     Base.getfield(x, base_field(T, t))
 end
@@ -79,6 +111,7 @@ Base.@pure function base_field(T, t)
 end
 
 """查询类型没有实现的抽象方法，用以检查目的。
+用`check_abstract(Class)::Dict`查询是否存在未实现的抽象方法。
 """
 function check_abstract end
 

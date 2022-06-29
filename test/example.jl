@@ -20,9 +20,7 @@ end
 
 @oodef mutable struct Bus <: Vehicle
     function new(speed::Float64)
-        @construct begin
-            @base(Vehicle) = Vehicle(speed)
-        end
+        @construct Vehicle(speed)
     end
 
     # override
@@ -122,7 +120,7 @@ end
 
     function new(speed::Float64)
         @construct begin
-            @base(Bus) = Bus(speed)
+            Bus(speed)
             m_power = "electricity"
         end
     end
