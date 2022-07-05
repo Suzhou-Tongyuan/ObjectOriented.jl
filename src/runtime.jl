@@ -21,6 +21,8 @@ export @typed_access
 struct InitField{Sym, Base} end
 abstract type Object{U} end
 
+"""`BoundMethod(this, func)(arg1, arg2) == func(this, arg1, arg2)`
+"""
 struct BoundMethod{This, Func}
     this:: This
     func:: Func
@@ -110,6 +112,13 @@ Base.@pure function base_field(T, t)
     error("type $T has no base type $t")
 end
 
+@inline _object_init_impl(self, args...; kwargs...) = nothing
+
+@inline function object_init(self, args...; kwargs...)
+    _object_init_impl(self, args...; kwargs...)
+    return self
+end
+
 """查询类型没有实现的抽象方法，用以检查目的。
 用`check_abstract(Class)::Dict`查询是否存在未实现的抽象方法。
 """
@@ -124,7 +133,6 @@ end
 end
 
 @inline isinstance(jl_val, cls) = jl_val isa cls
-
 ## END
 
 _unwrap(::Type{InitField{Sym, Base}}) where {Sym, Base} = (Sym, Base)
@@ -144,7 +152,11 @@ function mk_init_singleton(@nospecialize(t))
     Expr(:new, t, map(mk_init_singleton, fieldtypes(t))...)
 end
 
-@noinline function _construct(T, args)
+function default_initializers(t)
+    NamedTuple()
+end
+
+@noinline function _construct(type_default_initializers, T, args)
     n = div(length(args), 2)
     names = fieldnames(T)
     types = fieldtypes(T)
@@ -177,9 +189,15 @@ end
         end
     end
 
+    default_support_symbols = type_default_initializers.parameters[1]
     for i = eachindex(arguments)
         if !isassigned(arguments, i)
-            if ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
+            name = fieldname(T, i)
+            if name in default_support_symbols
+                t_field = fieldtype(T, i)
+                arguments[i] = :($Base.convert($t_field, default_initializers.$name()))
+                continue
+            elseif ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
                 arguments[i] = mk_init_singleton(types[i])
                 continue
             end
@@ -189,8 +207,8 @@ end
     Expr(:new, T, arguments...)
 end
 
-@generated function construct(::Type{T}, args...) where T
-    _construct(T, args)
+@generated function construct(default_initializers::NamedTuple, ::Type{T}, args...) where T
+    _construct(default_initializers, T, args)
 end
 
 end # module

@@ -1,5 +1,7 @@
+module Inference
 using TyOOP
 using InteractiveUtils
+using Test
 
 @oodef struct IVehicle
     function get_speed end
@@ -9,7 +11,7 @@ end
 @oodef mutable struct Vehicle <: IVehicle
     m_speed :: Float64
     function new(speed)
-        @construct begin
+        @mk begin
             m_speed = speed
         end
     end
@@ -17,8 +19,8 @@ end
 
 @oodef mutable struct Bus <: Vehicle
     function new(speed::Float64)
-        @construct begin
-            @base(Vehicle) = Vehicle(speed)
+        @mk begin
+            Vehicle(speed)
         end
     end
 
@@ -35,4 +37,8 @@ end
 
 f(x) = @typed_access x.speed
 
-code_warntype(f, (Bus, ))
+@testset "inference property with @typed_access" begin
+    bus = Bus(1.0)
+    (@code_typed f(bus)).second === Float64
+end
+end

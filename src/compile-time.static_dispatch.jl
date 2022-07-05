@@ -218,7 +218,7 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     end
 
     check_abstract_def = @q function $TyOOP.check_abstract(::$Type{<:$t})
-        $(QuoteNode(abstract_methods))
+        $(lift_to_quot(abstract_methods))
     end
 
     getter_body = build_if(get_block, :($TyOOP.getproperty_fallback(this, prop)))
