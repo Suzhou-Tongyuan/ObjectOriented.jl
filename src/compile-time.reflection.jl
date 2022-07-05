@@ -114,7 +114,7 @@ end
 Base.@kwdef struct FieldInfo
     ln :: LineNumberNode
     name :: Symbol
-    type :: TypeRepr = TypeRepr(base=:Any)
+    type :: Any = :Any
     defaultVal :: Any = _undefined
 end
 
@@ -249,8 +249,8 @@ end
 
 function parse_field_def(ln :: LineNumberNode, f; fallback :: T = _undefined) where T
     @match f begin
-        :($n :: $t) => FieldInfo(ln = ln, name = n, type = parse_type_repr(ln, t))
-        :($n :: $t = $v) => FieldInfo(ln = ln, name = n, type = parse_type_repr(ln, t), defaultVal = v)
+        :($n :: $t) => FieldInfo(ln = ln, name = n, type = t)
+        :($n :: $t = $v) => FieldInfo(ln = ln, name = n, type = t, defaultVal = v)
         :($n = $v) => FieldInfo(ln = ln, name = n, defaultVal = v)
         n :: Symbol => FieldInfo(ln = ln, name = n)
         _ =>

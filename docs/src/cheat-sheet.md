@@ -343,7 +343,7 @@ ScikitLearnBase.predict(clf, xdata)
 
 ### 9. 性能问题
 
-TyOOP本身和Julia原生代码一样快，但由于[点操作符`Base.getproperty`的类型推断问题](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm)，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
+TyOOP本身和Julia原生代码一样快，但由于递归调用点操作符运算`Base.getproperty`的类型推断问题 (例如[这个例子](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm))，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
 
 这可能带来性能问题。出现该问题的情况是有限的，问题场合如下：
 
@@ -356,3 +356,5 @@ TyOOP本身和Julia原生代码一样快，但由于[点操作符`Base.getproper
 @typed_access my_instance.method()
 @typed_access my_instance.property
 ```
+
+注意：上述代码中请保证`my_instance`类型已知。如果`@typed_access`标注的代码存在动态类型或类型不稳定，可能导致更严重的性能问题。

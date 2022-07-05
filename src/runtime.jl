@@ -21,6 +21,8 @@ export @typed_access
 struct InitField{Sym, Base} end
 abstract type Object{U} end
 
+"""`BoundMethod(this, func)(arg1, arg2) == func(this, arg1, arg2)`
+"""
 struct BoundMethod{This, Func}
     this:: This
     func:: Func
@@ -110,6 +112,13 @@ Base.@pure function base_field(T, t)
     error("type $T has no base type $t")
 end
 
+@inline _object_init_impl(self, args...; kwargs...) = nothing
+
+@inline function object_init(self, args...; kwargs...)
+    _object_init_impl(self, args...; kwargs...)
+    return self
+end
+
 """查询类型没有实现的抽象方法，用以检查目的。
 用`check_abstract(Class)::Dict`查询是否存在未实现的抽象方法。
 """
@@ -124,7 +133,6 @@ end
 end
 
 @inline isinstance(jl_val, cls) = jl_val isa cls
-
 ## END
 
 _unwrap(::Type{InitField{Sym, Base}}) where {Sym, Base} = (Sym, Base)
@@ -142,6 +150,14 @@ end
 
 function mk_init_singleton(@nospecialize(t))
     Expr(:new, t, map(mk_init_singleton, fieldtypes(t))...)
+end
+
+function _default_field_expr(t, field_index)
+    return false, nothing
+end
+
+function _find_default_field_expr(t, field_index, d::Dict)
+    haskey(d, field_index), get(d, field_index, nothing)
 end
 
 @noinline function _construct(T, args)
@@ -179,7 +195,10 @@ end
 
     for i = eachindex(arguments)
         if !isassigned(arguments, i)
-            if ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
+            has_default, default_expr = _default_field_expr(T, i)
+            if has_default
+                arguments[i] = default_expr
+            elseif ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
                 arguments[i] = mk_init_singleton(types[i])
                 continue
             end

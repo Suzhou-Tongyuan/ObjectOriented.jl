@@ -1,17 +1,24 @@
 import TyOOP.RunTime: Object
 using DataStructures
 
-@nospecialize
-
 Base.@enum PropertyKind MethodKind GetterPropertyKind SetterPropertyKind
 MLStyle.is_enum(::PropertyKind) = true
 MLStyle.pattern_uncall(e::PropertyKind, _, _, _, _) = MLStyle.AbstractPatterns.literal(e)
 
 struct PropertyDefinition
     name::Symbol
-    def::Union{Missing, Expr} # nothing for abstract methods
-    from_type::Expr
+    def::Any # nothing for abstract methods
+    from_type::Any
     kind :: PropertyKind
+end
+
+
+lift_to_quot(x::PropertyDefinition) = Expr(:call, PropertyDefinition, lift_to_quot(x.name), x.def, x.from_type, x.kind)
+lift_to_quot(x::Symbol) = QuoteNode(x)
+lift_to_quot(x) = x
+function lift_to_quot(x::Dict)
+    pair_exprs = Expr[:($(lift_to_quot(k)) => $(lift_to_quot(v))) for (k, v) in x]
+    :($Dict($(pair_exprs...)))
 end
 
 struct PropertyName
@@ -88,6 +95,26 @@ macro like(t)
     esc(:($like($t)))
 end
 
+"""
+define (abstract) properties such as getters and setters:
+```
+## Abstract
+@oodef struct IXXX
+    @property(field) do
+        get
+        set
+    end
+end
+
+## Concrete
+@oodef struct XXX1 <: IXXX
+    @property(field) do
+        get = self -> 1
+        set = (self, value) -> ()
+    end
+end
+```
+"""
 macro property(f, ex)
     esc(Expr(:do, :(define_property($ex)), f))
 end
@@ -173,30 +200,31 @@ end
 function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
     base_dict = OrderedDict{Type, Symbol}()
     struct_block = []
-    default_parameters = []
     outer_block = []
     methods = PropertyDefinition[]
 
     fieldnames = Symbol[]
     typename = type_def.name
+    default_inits = Dict{Int, QuoteNode}()
 
     traitname = Symbol(typename, "::", :trait)
     traithead = apply_curly(traitname, Symbol[p.name for p in type_def.typePars])
     custom_init :: Bool = false
-    has_any_field :: Bool = false
     
     class_where = type_def_create_where(type_def)
     class_ann = type_def_create_ann(type_def)
 
     for each::FieldInfo in type_def.fields
         push!(struct_block, each.ln)
+        if each.name in fieldnames
+            throw(create_exception(each.ln, "duplicate field name $(each.name)"))
+        end
         push!(fieldnames, each.name)
 
-        type_expr = to_expr(each.type)
+        type_expr = each.type
         if each.defaultVal isa Undefined
-            push!(default_parameters, :($(each.name) :: $(type_expr)))
         else
-            push!(default_parameters, :($(each.name) :: $(type_expr) = $(each.defaultVal)))
+            default_inits[length(fieldnames)] = each.defaultVal
         end
         push!(struct_block, :($(each.name) :: $(type_expr)))
     end
@@ -207,6 +235,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         end
 
         if each.name === :new
+            # automatically create type parameters if 'self' parameter is not annotated
             each.typePars = TypeParamInfo[type_def.typePars..., each.typePars...]
             insert!(each.body.args, 1, :($sym_generic_type = $class_ann))
             insert!(each.body.args, 1, each.ln)
@@ -284,7 +313,6 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         base_name_sym = Symbol(typename, "::layout$idx::", string(each.base))
         base_dict[Base.eval(cur_mod, each.base)] = base_name_sym
         type_expr = to_expr(each)
-        push!(default_parameters, :($base_name_sym :: $type_expr))
         push!(struct_block, :($base_name_sym :: $type_expr))
         push!(outer_block,
                 :(Base.@inline $TyOOP.base_field(::Type{$class_ann}, ::Type{$type_expr}) where {$(class_where...)} = $(QuoteNode(base_name_sym))))
@@ -315,6 +343,9 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                 Expr(:block, struct_block...)),
             :($TyOOP.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
             
+        ];
+        [
+            :(TyOOP.Runtime._default_field_expr(t::$Type{<:$typename}, field_index) = haskey($default_inits) default_inits())
         ];
         outer_block
     ]

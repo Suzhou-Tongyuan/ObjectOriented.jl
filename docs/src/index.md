@@ -1,6 +1,10 @@
+```@meta
+CurrentModule = TyOOP
+```
+
 # TyOOP
 
-TyOOP为Julia提供一套完整的面向对象机制，方法上基于CPython的面向对象实现，对Julia做了适配。
+[TyOOP](https://github.com/thautwarm/TyOOP.jl)为Julia提供一套完整的面向对象机制，设计上主要基于CPython的面向对象，对Julia做了适配。
 
 其功能一览如下：
 
@@ -16,6 +20,8 @@ TyOOP为Julia提供一套完整的面向对象机制，方法上基于CPython的
 | 权限封装(modifiers)  | 否 | 同Python |
 | 类静态方法  | 否 | 与Julia常规使用冲突，且易替代 |
 | 元类(metaclass)        | 否 | 宏的下位替代，实际场景使用较少 |
+
+快速学习请参考[TyOOP Cheat Sheet](./cheat-sheet.md).
 
 ## OO类型定义
 
