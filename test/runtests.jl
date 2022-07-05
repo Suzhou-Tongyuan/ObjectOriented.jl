@@ -296,6 +296,31 @@ module structdef
             end
         end
     end
+
+    z = "2"
+    some_ref_val = Ref(2)
+    @oodef struct TestDefaultFieldsImmutable
+        a :: Int = 1
+        b :: String = begin; some_ref_val[] = 1; repeat(z, 3) end
+        function new()
+            @mk
+        end
+
+        function new(b::String)
+            @mk b = b
+        end
+    end
+
+    @testset "default fields" begin
+        x = TestDefaultFieldsImmutable()
+        @test x.a == 1
+        @test x.b == repeat(z, 3)
+        @test some_ref_val[] == 1
+        some_ref_val[] = 5
+        x = TestDefaultFieldsImmutable("sada")
+        @test some_ref_val[] == 5
+        @test x.b == "sada"
+    end
 end
 
 include("example.jl")

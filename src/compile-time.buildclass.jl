@@ -12,7 +12,6 @@ struct PropertyDefinition
     kind :: PropertyKind
 end
 
-
 lift_to_quot(x::PropertyDefinition) = Expr(:call, PropertyDefinition, lift_to_quot(x.name), x.def, x.from_type, x.kind)
 lift_to_quot(x::Symbol) = QuoteNode(x)
 lift_to_quot(x) = x
@@ -130,7 +129,7 @@ end
 macro mk()
     esc(@q begin
         $__source__
-        $TyOOP.construct($sym_generic_type)
+        $TyOOP.construct(TyOOP.RunTime.default_initializers($sym_generic_type), $sym_generic_type)
     end)
 end
 
@@ -181,7 +180,7 @@ macro mk(ex)
     esc(@q begin
         $__source__
         # $TyOOP.check_abstract($sym_generic_type) # TODO: a better mechanism to warn abstract classes
-        $TyOOP.construct($sym_generic_type, $(arguments...))
+        $TyOOP.construct(TyOOP.RunTime.default_initializers($sym_generic_type), $sym_generic_type, $(arguments...))
     end)
 end
 
@@ -205,7 +204,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
 
     fieldnames = Symbol[]
     typename = type_def.name
-    default_inits = Dict{Int, QuoteNode}()
+    default_inits = Expr[]
 
     traitname = Symbol(typename, "::", :trait)
     traithead = apply_curly(traitname, Symbol[p.name for p in type_def.typePars])
@@ -224,7 +223,10 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         type_expr = each.type
         if each.defaultVal isa Undefined
         else
-            default_inits[length(fieldnames)] = each.defaultVal
+            fname = gensym("$typename::create_default_$(each.name)")
+            fun = Expr(:function, :($fname()), Expr(:block, each.ln, each.ln, each.defaultVal))
+            push!(outer_block, fun)
+            push!(default_inits, :($(each.name) = $fname))
         end
         push!(struct_block, :($(each.name) :: $(type_expr)))
     end
@@ -323,7 +325,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             outer_block,
             let generic_type = class_ann
                 @q if $(type_def.isMutable) || sizeof($typename) == 0
-                    function $typename()
+                    @eval function $typename()
                         $cur_line
                         $sym_generic_type = $class_ann
                         $(Expr(:macrocall, getfield(TyOOP, Symbol("@mk")), cur_line))
@@ -334,6 +336,8 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
     end
 
     defhead = apply_curly(typename, class_where)
+    expr_default_initializers = 
+        isempty(default_inits) ? :(NamedTuple()) : Expr(:tuple, default_inits...)
     outer_block = [
         [
             :(struct $traithead end),
@@ -345,7 +349,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             
         ];
         [
-            :(TyOOP.Runtime._default_field_expr(t::$Type{<:$typename}, field_index) = haskey($default_inits) default_inits())
+            :($TyOOP.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
         ];
         outer_block
     ]

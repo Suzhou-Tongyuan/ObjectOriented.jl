@@ -152,15 +152,11 @@ function mk_init_singleton(@nospecialize(t))
     Expr(:new, t, map(mk_init_singleton, fieldtypes(t))...)
 end
 
-function _default_field_expr(t, field_index)
-    return false, nothing
+function default_initializers(t)
+    NamedTuple()
 end
 
-function _find_default_field_expr(t, field_index, d::Dict)
-    haskey(d, field_index), get(d, field_index, nothing)
-end
-
-@noinline function _construct(T, args)
+@noinline function _construct(type_default_initializers, T, args)
     n = div(length(args), 2)
     names = fieldnames(T)
     types = fieldtypes(T)
@@ -193,11 +189,14 @@ end
         end
     end
 
+    default_support_symbols = type_default_initializers.parameters[1]
     for i = eachindex(arguments)
         if !isassigned(arguments, i)
-            has_default, default_expr = _default_field_expr(T, i)
-            if has_default
-                arguments[i] = default_expr
+            name = fieldname(T, i)
+            if name in default_support_symbols
+                t_field = fieldtype(T, i)
+                arguments[i] = :($Base.convert($t_field, default_initializers.$name()))
+                continue
             elseif ismutable(T) || isbitstype(types[i]) && sizeof(types[i]) === 0
                 arguments[i] = mk_init_singleton(types[i])
                 continue
@@ -208,8 +207,8 @@ end
     Expr(:new, T, arguments...)
 end
 
-@generated function construct(::Type{T}, args...) where T
-    _construct(T, args)
+@generated function construct(default_initializers::NamedTuple, ::Type{T}, args...) where T
+    _construct(default_initializers, T, args)
 end
 
 end # module

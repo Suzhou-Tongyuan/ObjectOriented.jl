@@ -15,6 +15,7 @@ CurrentModule = TyOOP
 | 构造器和实例方法重载 | 是 | 基于多重分派 |
 | 多继承 | 是 | MRO基于扩展的C3算法 |
 | Python风格 properties | 是 | |
+| 默认字段 | 是 | |
 | 泛型  | 是 |  |
 | 接口 | 是 | 使用空结构体类型的基类 |
 | 权限封装(modifiers)  | 否 | 同Python |
@@ -53,6 +54,48 @@ end
     end
 end
 ```
+
+### 默认字段
+
+TyOOP支持默认字段。
+
+在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
+
+```julia
+function get_default_field2()
+    println("default field2!")
+    return 30
+end
+
+@oodef struct MyType
+    field1 :: DataType = MyType
+    field2 :: Int = get_default_field2()
+
+    function new()
+        return @mk
+    end
+
+    function new(field2::Integer)
+        return @mk field2 = field2
+    end
+end
+
+julia> MyType()
+default field2!
+MyType(MyType, 30)
+
+julia> MyType(50)
+MyType(MyType, 50)
+```
+
+关于默认字段的注意点：
+
+1. 默认字段没有性能开销。
+
+2. 在`@mk`块显式指定字段初始化时，默认字段的表达式不会被求值。
+
+3. 默认字段无法访问其他字段。
+
 
 ## 类型构造器
 

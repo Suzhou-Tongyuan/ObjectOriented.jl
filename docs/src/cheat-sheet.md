@@ -48,6 +48,34 @@ mt = MutableData(1, 2)
 mt.x += 1
 ```
 
+#### 默认字段
+
+TyOOP支持默认字段。
+
+在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
+
+```julia
+@oodef struct MyType
+    field1 :: DataType = MyType
+    field2 :: Int = 30
+
+    function new()
+        return @mk
+    end
+end
+
+julia> MyType()
+MyType(MyType, 30)
+```
+
+关于默认字段的注意点：
+
+1. 默认字段没有性能开销。
+
+2. 在`@mk`块显式指定字段初始化时，默认字段的表达式不会被求值。
+
+3. 默认字段无法访问其他字段。
+
 ### 2. 继承
 
 ```julia
