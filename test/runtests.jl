@@ -302,4 +302,5 @@ include("example.jl")
 Example.DoPrint[] = false
 Example.runtest()
 
+include("inference.jl")
 end
