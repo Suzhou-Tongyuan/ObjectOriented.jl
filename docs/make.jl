@@ -18,7 +18,8 @@ makedocs(;
         "Home" => "index.md",
         "Cheat Sheet" => "cheat-sheet-en.md",
         "index-cn.md",
-        "cheat-sheet-cn.md"
+        "cheat-sheet-cn.md",
+        "how-to-translate-oop-into-julia.md"
     ],
 )
 

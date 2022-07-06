@@ -24,6 +24,17 @@ CurrentModule = TyOOP
 
 快速学习请参考[TyOOP Cheat Sheet](./cheat-sheet-cn.md).
 
+必须强调的是，我们认可社区关于“不要在Julia中做OOP”的观点。
+
+我们创建这个指南，以指导用户如何将OOP代码翻译为更简短、更高效的Julia代码。
+
+我们更是花费精力将TyOOP设计成这个样子：OOP的使用能被局限在坚定的OOP使用者的代码里，通过接口编程，这些OOP代码和正常的Julia对接，以避免不合适的代码在外部泛滥。
+
+Note that we support the community idea "do not do OOP in Julia".
+
+We make this [guide](./how-to-translate-oop-into-julia.md) to instruct users how to translate OOP into idiomatic Julia code.
+
+
 ## OO类型定义
 
 TyOOP支持定义class和struct，class使用`@oodef mutable struct`开头，struct使用`@oodef struct`开头。

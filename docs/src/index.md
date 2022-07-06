@@ -25,6 +25,12 @@ The feature list is given below:
 
 Quick start through [TyOOP Cheat Sheet](./cheat-sheet-en.md).
 
+Note that we support the community idea "do not do OOP in Julia".
+
+We make this [guide](./how-to-translate-oop-into-julia.md) to instruct users on how to translate OOP code into Julia, promising more concise, more extensible and more efficient code.
+
+We even took the effort to design TyOOP as what it is now: the usage of OOP is confined to the code of committed OOP users, and through interface programming, this OOP code is interfaced with normal Julia to avoid the proliferation of inappropriate code outside.
+
 ## OO type definition
 
 TyOOP supports defining `class`es and `struct`s. A `class` definition starts with `@oodef mutable struct`, while a `struct` definition starts with `@oodef struct`.
