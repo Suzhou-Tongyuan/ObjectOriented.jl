@@ -19,6 +19,6 @@ After going through above details, we'll finally raise the point that Julia full
 2. implicit upcasts
 3. code constraints
 
-We are pragmatic. The disadvantages of multiple dispatch about IDE support and user mental model will also be included.
+We are pragmatic. The disadvantages of multiple dispatch about IDE support will be also included.
 
 (under construction)
