@@ -4,7 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://Suzhou-Tongyuan.github.io/TyOOP.jl/dev/)
 [![Build Status](https://github.com/Suzhou-Tongyuan/TyOOP.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Suzhou-Tongyuan/TyOOP.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-[TyOOP](https://github.com/thautwarm/TyOOP.jl) is a mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia, intentionally for Python users.
+[TyOOP](https://github.com/thautwarm/TyOOP.jl) is a mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia.
 
 
 The supported features:
