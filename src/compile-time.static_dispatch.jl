@@ -28,23 +28,24 @@ function build_multiple_dispatch!(
         end
         method_dict[name] = proper_def
     end
-    for key in collect(keys(method_dict))
-        desc :: PropertyDefinition = method_dict[key]
-        if desc.kind === MethodKind
-            try_remove_prefix(:set_, desc.name) do name
-                local key = @setter_prop(name)
-                if !haskey(method_dict, key)
-                    method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, SetterPropertyKind)
-                end
-            end
-            try_remove_prefix(:get_, desc.name) do name
-                local key = @getter_prop(name)
-                if !haskey(method_dict, key)
-                    method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, GetterPropertyKind)
-                end
-            end
-        end
-    end
+    # use 'get_xxx' to generate a getter for 'xxx' & use 'set_xxx' to generate a setter for 'xxx'
+    # for key in collect(keys(method_dict))
+    #     desc :: PropertyDefinition = method_dict[key]
+    #     if desc.kind === MethodKind
+    #         try_remove_prefix(:set_, desc.name) do name
+    #             local key = @setter_prop(name)
+    #             if !haskey(method_dict, key)
+    #                 method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, SetterPropertyKind)
+    #             end
+    #         end
+    #         try_remove_prefix(:get_, desc.name) do name
+    #             local key = @getter_prop(name)
+    #             if !haskey(method_dict, key)
+    #                 method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, GetterPropertyKind)
+    #             end
+    #         end
+    #     end
+    # end
     cgi.method_dict = method_dict
     out = cgi.outblock
     base_dict = cgi.base_dict

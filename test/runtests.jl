@@ -8,6 +8,13 @@ module structdef
     using MLStyle: @match
     import InteractiveUtils
 
+    function not_code_coverage(e)
+        @match e begin
+            Expr(:code_coverage_effect, _...) => false
+            _ => true
+        end
+    end
+
     # Julia's default constructor are used for structs that have fields
     # 当结构体存在字段，使用Julia默认的构造器
     @oodef struct A
@@ -80,12 +87,10 @@ module structdef
     end
 
     @oodef struct A4
-
-        # get_xxx generates a getter xxx
-        # get_xxx 自动生成getter xxx
-        function get_a end
-        # set_xxx 自动生成setter xxx
-        function set_a end
+        @property(a) do
+            set
+            get
+        end
     end
 
     # 检查未实现的抽象方法
@@ -101,8 +106,6 @@ module structdef
         @test Set(keys(TyOOP.check_abstract(A4))) == Set([
             PropertyName(false, :a), # getter
             PropertyName(true, :a), # setter
-            PropertyName(false, :get_a),
-            PropertyName(false, :set_a)
         ])
     end
 
@@ -137,12 +140,9 @@ module structdef
             end
         end
 
-        function set_a(self, value)
-            self.x = value
-        end
-
-        function get_a(self, value)
-            self.x = value
+        @property(a) do
+            set = (self, value) -> self.x = value
+            get = (self) -> self.x
         end
     end
 
@@ -153,13 +153,16 @@ module structdef
         @test b.x === 3
         b.interface_prop = 10
         @test b.x === 9
+        @test b.x == b.a
+        b.a = 11
+        @test b.x == 11
     end
 
     # can fetch a type's properties
     # 可以获取类型的properties
     @testset "propertynames" begin
         issubset(
-            Set([:x, :a, :interface_method2, :interface_method1, :interface_prop, :get_a, :set_a]),
+            Set([:x, :a, :interface_method2, :interface_method1, :interface_prop]),
             Set(propertynames(B34)))
     end
 
@@ -227,11 +230,11 @@ module structdef
             # │    └──      return %2
             # └    ) => Int64
             @test c.second === Int
-            @test @match c.first.code[2] begin
+            @test @match filter(not_code_coverage, c.first.code)[2] begin
                 Expr(:call, f, _...) && if f == GlobalRef(Base, :arrayref) end => true
                 _ => false
             end
-            @test length(c.first.code) == 3
+            @test length(filter(not_code_coverage, c.first.code)) == 3
         end
     end
 
@@ -249,19 +252,20 @@ module structdef
     end
 
     @oodef struct TestPropertyInference
-        function get_a(self)
-            1
+        @property(a) do
+            get = self -> 1
         end
 
-        function get_b(self)
-            "str"
+        @property(b) do
+            get = self -> "str"
         end
     end
+
     x = TestPropertyInference()
     @testset "test inferencing properties" begin
         @test x.a == 1
         @test x.b == "str"
-        @test Any == (InteractiveUtils.@code_typed x.a).second
+        @test (InteractiveUtils.@code_typed x.a).second in (Any, Union{Int, String})
         f(x) = @typed_access x.a
         @test Int == (InteractiveUtils.@code_typed f(x)).second
     end
@@ -291,8 +295,8 @@ module structdef
     @testset "qualified field types" begin
         @oodef struct QualifiedFieldType
             b :: Core.Builtin
-            function get_a(self)
-                1
+            @property(a) do
+                get = self -> 1
             end
         end
     end

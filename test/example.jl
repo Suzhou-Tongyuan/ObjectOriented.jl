@@ -30,7 +30,7 @@ end
 
     # override
     function get_speed(self)
-        self.m_speed
+        return self.m_speed
     end
 end
 
@@ -51,21 +51,7 @@ end
             m_rooms = rooms
         end
     end
-    # class methods
 
-    # virtual methods
-
-    # override
-    # function get_rooms(self) # 'get_xxx' defines a getter
-    #     self.m_rooms
-    # end
-
-    # override
-    # function set_rooms(self, value) # 'set_xxx' defines a setter
-    #     self.m_rooms = value
-    # end
-
-    # a more readable property definition syntax
     @property(rooms) do
         get = function (self)
             self.m_rooms
@@ -97,18 +83,15 @@ end
         # end
     end
 
-    function get_power(self)
-        self.m_power
-    end
-
-    function set_power(self, v)
-        self.m_power = v
+    @property(power) do
+        get = self -> self.m_power
+        set = (self, value) -> self.m_power = value
     end
 
     # override
     function info(self)
         "power = $(self.m_power), " *
-        "speed = $(self.speed), " *
+        "speed = $(self.get_speed()), " *
         "rooms=$(self.rooms)"
     end
 end
@@ -125,8 +108,8 @@ end
         end
     end
 
-    function get_power(self)
-        self.m_power
+    @property(power) do
+        get = self -> self.m_power
     end
 
     # override
@@ -164,7 +147,7 @@ end
 
 
 function get_speed(o::@like(IVehicle))
-    o.speed
+    o.get_speed()
 end
 
 using InteractiveUtils
