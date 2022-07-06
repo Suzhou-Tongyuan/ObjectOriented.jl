@@ -4,6 +4,8 @@ CurrentModule = TyOOP
 
 # TyOOP
 
+[中文文档](index-cn.md)
+
 [TyOOP](https://github.com/thautwarm/TyOOP.jl) provides relatively complete object-oriented programming support for Julia. This is mainly based on CPython's object-oriented programming, and adpated for Julia.
 
 The feature list is given below:
