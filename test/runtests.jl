@@ -8,9 +8,10 @@ module structdef
     using MLStyle: @match
     import InteractiveUtils
 
-    function not_code_coverage(e)
+    function not_code_coverage_and_goto(e)
         @match e begin
             Expr(:code_coverage_effect, _...) => false
+            ::Core.GotoNode => false
             _ => true
         end
     end
