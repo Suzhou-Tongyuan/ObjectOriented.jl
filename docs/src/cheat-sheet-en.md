@@ -1,12 +1,10 @@
-## TyOOP Cheat Sheet
+## TyOOP cheat sheet
 
-TyOOP为Julia提供面向对象编程的功能，支持多继承、点操作符取成员、Python风格的properties以及接口编程。
+TyOOP has provided relatively complete object-oriented programming support for Julia. It supports multiple inheritances, dot-operator access to members, Python-style properties and interface proramming.
 
+### 1. Type definition
 
-### 1. 类型定义
-
-
-定义不可变的OO结构体。
+Define immutable OO structs:
 
 ```julia
 @oodef struct ImmutableData
@@ -25,11 +23,11 @@ d = ImmutableData(1, 2)
 x = d.x
 ```
 
-其中，`new`是构造器函数。构造器和方法都可以重载。
+`new`is the constructor. Constructs and methods can be overloaded.
 
-`@mk`语句块产生当前类型的实例，在随后的语句块中，形如`a = b`是设置字段，形如`BaseClass(arg1, arg2)`是基类初始化。
+A `@mk` block creates an instance for the current struct/class. Inside the block, an assignment statement `a = b` initializes the field `a` with the expression `b`; a call statement like `BaseType(arg1, arg2)` calls the constructor of the base class/struct `BaseType`.
 
-定义可变的OO结构体（class）。
+Defining OO classes (mutable structs):
 
 ```julia
 @oodef mutable struct MutableData
@@ -48,33 +46,41 @@ mt = MutableData(1, 2)
 mt.x += 1
 ```
 
-#### 默认字段
+#### Default field values
 
-TyOOP支持默认字段。
-
-在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
+Using this feature, when defining a field for classes/structs, if a default value is provided, then the initialization for this field can be missing in the `@mk` block.
 
 ```julia
+function get_default_field2()
+    println("default field2!")
+    return 30
+end
+
 @oodef struct MyType
     field1 :: DataType = MyType
-    field2 :: Int = 30
+    field2 :: Int = get_default_field2()
 
     function new()
         return @mk
     end
+
+    function new(field2::Integer)
+        return @mk field2 = field2
+    end
 end
 
 julia> MyType()
+default field2!
 MyType(MyType, 30)
+
+julia> MyType(50)
+MyType(MyType, 50)
 ```
 
-关于默认字段的注意点：
-
-1. 默认字段没有性能开销。
-
-2. 在`@mk`块显式指定字段初始化时，默认字段的表达式不会被求值。
-
-3. 默认字段无法访问其他字段。
+Some points of the default field values:
+1. there is no performance overhead in using default field values.
+2. when a field has been explicitly initialized in the `@mk` block, the expression of the default field value won't be evaluated.
+3. unlike `Base.@kwdef`, default field values cannot reference each other.
 
 ### 2. 继承
 
@@ -111,23 +117,24 @@ sam.snake_check()
 # Calling a snake specific method!
 ```
 
-此外，以下需要非常注意！
+**CAUTION**:
 
 ```julia
 Snake <: Animal # false
 Snake("xxx") isa Animal # false
 ```
 
-记住，Julia原生类型系统并不理解两个class的子类型关系！详见[基于接口的多态抽象](#7-基于接口的多态抽象)。
+Note that Julia's native type system does not understand the subtyping relationship between two oo classes! See [Interface-based polymorphism](@ref interface_polymorphism_cn) for more details.
 
-你应该使用下列方法测试继承关系：
+Use the following methods to test inheritance relationship:
+
 ```julia
 issubclass(Snake, Animal) # true
 isinstance(Snake("xxx"), Animal) # true
 Snake("xxx") isa @like(Animal) # true
 ```
 
-### 4. Properties
+### 4. Python-style properties
 
 ```julia
 @oodef mutable struct Square
@@ -149,31 +156,31 @@ square.area = 25
 square.side # 5.0
 ```
 
-### 5. 接口
+### 5. Interfaces
 
-接口类型，是大小为0(`sizeof(t) == 0`)的**不可变**OO类型。
+An interface in TyOOP means an OO struct type which satisfies `sizeof(interface) == 0`.
 
-接口类型实例的构造器是自动生成的，但也可以手动定义。
+Interface constructors are auto-generated, but custom constructors are allowed.
 
-下面的`HasLength`是接口类型。
+The following `HasLength` is an interface.
 
 ```julia
 @oodef struct HasLength
     @property(len) do
-        get  #= 抽象property: len =#
+        get  # abstract getter property
     end
 end
 
 @oodef struct Fillable
-    function fill! end # 空函数表示抽象方法
+    function fill! end # an empty function means abstract method
 
-    # 定义一个抽象的setter, 可以为全体元素赋值
+    # define an abstract property  to set all values
     @property(allvalue) do
         set
     end
 end
 
-@oodef struct MyVector{T} <: {HasLength, Fillable}  # 多继承
+@oodef struct MyVector{T} <: {HasLength, Fillable}  # multiple inheritance
     xs :: Vector{T}
     function new(xs::Vector{T})
         @mk begin
@@ -189,12 +196,12 @@ check_abstract(MyVector)
 #   allvalue (setter) => PropertyDefinition(:allvalue, missing, :((Main).Fillable), SetterPropertyKind)
 ```
 
-`isempty(check_abstract(MyVector))`不为`true`，表示`MyVector`是抽象类型，需要实现相应属性或方法`len`, `fill!`和`allvalue`。
+`check_abstract(MyVector)` is not empty. This means `MyVector` is abstract (more accurately, shall not be instantiated). Otherwise, implementing `len`, `fill!`和`allvalue` is required.
+
 
 
 ```julia
-@oodef struct MyVector{T} <: {HasLength, Fillable}  # 多继承
-    # 旧代码
+@oodef struct MyVector{T} <: {HasLength, Fillable}  # multiple inheritance
     xs :: Vector{T}
     function new(xs::Vector{T})
         @mk begin
@@ -202,7 +209,8 @@ check_abstract(MyVector)
         end
     end
 
-    # 新增代码
+    # add the following definitions to 
+    # implement `HasLength` and `Fillable`
     @property(len) do
         get = self -> length(self.xs)
     end
@@ -227,10 +235,12 @@ vec
 # MyVector{Int64}([10, 10, 10], HasLength(), Fillable())
 ```
 
-此外，接口最重要的目的是基于接口的多态抽象。见下文[基于接口的多态抽象](#7-基于接口的多态抽象)。
+In addition, the most important reason for interfaces is the interface-based polymorphism. See [Interface-based polymorphism](@ref interface_polymorphism_cn).
 
 
 ### 6. 多继承
+
+MRO (Method resolution order) is using Python's C3 algorithm, so the behaviour is mostly identical to Python. The major difference is that the order of inheriting mixin classes is less strict.
 
 MRO(方法解析顺序)使用Python C3算法，所以多继承行为与Python一样。
 
@@ -253,10 +263,11 @@ end
 @oodef struct D <: {A, C, B}
     function new()
         @mk begin
-            A() # 可省略，因为A是接口类型
-            B() # 可省略，因为B是接口类型
-            C() # 不可省略，因为C是可变类型
-            # 基类初始化可写成一行: A(), B(), C()
+            A() # can omit. A is interface.
+            B() # can omit. B is interface.
+            C() # cannot omit. C is class (mutable struct).
+            # you can also write them in one line:
+            # A(), B(), C()
         end
     end
 end
@@ -274,10 +285,10 @@ d.call() # C
 #  A
 ```
 
-### 7. 基于接口的多态抽象
+### 7. [Interface-based polymorphism](@id interface_polymorphism_cn)
 
 
-下面例子给出一个容易犯错的情况：
+The following example shows an inproper use of the base class (`A`):
 
 ```julia
 @oodef struct A end
@@ -291,9 +302,9 @@ myapi(B())
 # ERROR: MethodError: no method matching myapi(::B)
 ```
 
-记住：Julia原生类型系统并不理解两个class的子类型关系！
+Remember that Julia's type system does not understand the subtyping relationship between two OO classes!
 
-如果希望Julia函数`myapi`的参数只接受A或A的子类型，应该这样实现：
+If you expect `myapi`  to accept `A` or `A`'s subtypes, you should do this:
 
 ```julia
 myapi(x :: @like(A)) = println("do something!")
@@ -306,9 +317,9 @@ myapi([])
 ```
 
 
-### 8. 一个机器学习的OOP实例
+### 8. A machine learning example
 
-在下面这份代码里，我们实现一个使用最小二乘法训练的机器学习模型，并让其支持Julia中ScikitLearn的接口。通过下面代码，用户可以像使用一般ScikitLearn.jl的模型一样来调用这个模型，更可以在MLJ机器学习框架中使用这个模型，而不必关心该模型由面向对象还是多重分派实现。
+In the following code, we implement a machine learning model trained using least squares and make it support the ScikitLearn interface (ScikitLearnBase.jl) in Julia. With the following code, users can call this model as if it were a normal ScikitLearn.jl model, and can use this model in the MLJ machine learning framework, regardless of whether the model is implemented by object-oriented features or multiple dispatch.
 
 ```julia
 using TyOOP
@@ -321,8 +332,9 @@ end
 using LsqFit
 
 @oodef mutable struct LsqModel{M<:Function} <: AbstractMLModel{Vector{Float64},Vector{Float64}}
-    model::M  # 一个函数，代表模型的公式
-    param::Vector{Float64}
+    model :: M  # a function to represent the model's formula
+    param :: Vector{Float64}
+
     function new(m::M, init_param::Vector{Float64})
         @mk begin
             model = m
@@ -345,7 +357,7 @@ using LsqFit
     end
 end
 
-# 例子来自 https://github.com/JuliaNLSolvers/LsqFit.jl
+# the example comes from https://github.com/JuliaNLSolvers/LsqFit.jl
 
 @. model(x, p) = p[1] * exp(-x * p[2])
 clf = LsqModel(model, [0.5, 0.5])
@@ -353,12 +365,13 @@ ptrue = [1.0, 2.0]
 xdata = collect(range(0, stop = 10, length = 20));
 ydata = collect(model(xdata, ptrue) + 0.01 * randn(length(xdata)));
 
-clf.fit!(xdata, ydata) # 训练模型
-clf.predict(xdata)  # 预测模型
-clf.param # 查看模型参数
+clf.fit!(xdata, ydata) # train
+clf.predict(xdata)     # predict
+clf.param              # inspect model parameters
 
-# ScikitLearnBase提供了fit!和predict两个接口函数。
-# 我们将TyOOP的接口(@like(...))和Julia接口对接。
+# ScikitLearnBase provides us two interface functions 'fit!' and 'predict'.
+# Now, we connect the TyOOP interface with Julia's idiomatic interface
+# via '@like(...)'.
 
 using ScikitLearnBase
 ScikitLearnBase.is_classifier(::@like(AbstractMLModel)) = true
@@ -369,20 +382,21 @@ ScikitLearnBase.fit!(clf, xdata, ydata)
 ScikitLearnBase.predict(clf, xdata)
 ```
 
-### 9. 性能问题
+### 9. Performance issues
 
-TyOOP本身和Julia原生代码一样快，但由于递归调用点操作符运算`Base.getproperty`的类型推断问题 (例如[这个例子](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm))，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
+Code generated by TyOOP does not introduce any overhead, but recursions of dot operations (`Base.getproperty(...)`) do have some issues concerning type inference (e.g., [this example](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm)). Although in most cases, the code produced by TyOOP is very efficient, the return type might suddenly becomes `Any` or some `Union` type.
 
-这可能带来性能问题。出现该问题的情况是有限的，问题场合如下：
 
-1. 使用Python风格的property
-2. 在method里访问另一个成员，该成员再次递归调用点操作符
+This might cause performance issues, but only in enumerable cases that have been well understood:
 
-解决方案也很简单，使用`@typed_access`标注可能出现性能问题的代码即可。
+1. Using Python-style properties
+2. Visiting another member in methods, the member will recursively perform dot operations (`Base.getproperty`).
+
+The solution is easy: use `@typed_access` to wrap a block of code which might suffer from above issues.
 
 ```julia
 @typed_access my_instance.method()
 @typed_access my_instance.property
 ```
 
-注意：上述代码中请保证`my_instance`类型已知。如果`@typed_access`标注的代码存在动态类型或类型不稳定，可能导致更严重的性能问题。
+**CAUTION**: please make sure that the type of the above `my_instance` is inferred when using `@typed_access`. Using `@typed_acccess` in dynamic code will damage your performance.

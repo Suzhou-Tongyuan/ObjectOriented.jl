@@ -4,29 +4,28 @@ CurrentModule = TyOOP
 
 # TyOOP
 
-[TyOOP](https://github.com/thautwarm/TyOOP.jl)为Julia提供一套完整的面向对象机制，设计上主要基于CPython的面向对象，对Julia做了适配。
+[TyOOP](https://github.com/thautwarm/TyOOP.jl) provides relatively complete object-oriented programming support for Julia. This is mainly based on CPython's object-oriented programming, and adpated for Julia.
 
-其功能一览如下：
+The feature list is given below:
 
-|  功能名   | 支持  | 注释 |
+|  feature   | support  | notes |
 |:----:  | :----:  | :----: |
-| 点操作符 | 是 | |
-| 继承  | 是 | 基类、子类不能直接转换 |
-| 构造器和实例方法重载 | 是 | 基于多重分派 |
-| 多继承 | 是 | MRO基于扩展的C3算法 |
-| Python风格 properties | 是 | |
-| 默认字段 | 是 | |
-| 泛型  | 是 |  |
-| 接口 | 是 | 使用空结构体类型的基类 |
-| 权限封装(modifiers)  | 否 | 同Python |
-| 类静态方法  | 否 | 与Julia常规使用冲突，且易替代 |
-| 元类(metaclass)        | 否 | 宏的下位替代，实际场景使用较少 |
+| inheritance  | yes | upcasts/downcasts are not supported  |
+| overloaded constructors and methods | yes | based on multiple dispatch |
+| multiple inheritance | yes | MRO based on [C3](https://en.wikipedia.org/wiki/C3_linearization)|
+| Python-style properties | yes | |
+| default field values | yes | |
+| generics  | yes |  |
+| interfaces | yes | singleton struct types as base classes |
+| modifiers  | no | just like Python |
+| static class methods  | no | won't fix to avoid [type piracy](https://docs.julialang.org/en/v1/manual/style-guide/#Avoid-type-piracy) |
+| metaclasses        | no | won't fix in favour of macros |
 
-快速学习请参考[TyOOP Cheat Sheet](./cheat-sheet.md).
+Quick start through [TyOOP Cheat Sheet](./cheat-sheet-en.md).
 
-## OO类型定义
+## OO type definition
 
-TyOOP支持定义`class`和`struct`，`class`使用`@oodef mutable struct`开头，`struct`使用`@oodef struct`开头。
+TyOOP supports defining `class`es and `struct`s. A `class` definition starts with `@oodef mutable struct`, while a `struct` definition starts with `@oodef struct`.
 
 ```julia
 using TyOOP
@@ -55,11 +54,48 @@ end
 end
 ```
 
-### 默认字段
+As shown above, `function new(...)` is responsible for defining class/struct constructors.
 
-TyOOP支持默认字段。
+We recommand using a `@mk begin ... end` block as the return value. In the block, you can specify zero or more `field_name = field_value` to initialize fields.
 
-在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
+The behaviour when missing constructors:
+1. if the type is a `class` (mutable struct), all fields are not initialized, as well as all base instances.
+2. if the type is a `struct`, using Julia's default constructor.
+
+Constructors can be overloaded.
+
+For the struct types whose memory consumption is `0`, constructors can be omitted.
+
+### Instance methods
+
+instance methods should start with `function method_name(class_instance, ...)`. The instance variable is recommended to be named `self` or `this`.
+
+The above code in both `MyClass` and `MyStruct` implement a method `f`. The method can be invoked using the syntax `instance.f()`.
+
+```julia
+@oodef mutable struct MyClass
+    a :: Int
+    
+    # ... this part is omitted
+
+    function f(self)
+        self.a
+    end
+end
+```
+
+Instance methods support aribitrary Julia parameters, such as variadic parameters, keyword arguments, variadic keyword arguments, default positional arguments and default keyword arguments.
+
+Besides, the instance methods support generic parameters, and can be overloaded.
+
+(**P.S**) If you want to annotate the `self` parameter, it is recommended to use `self :: @like(MyClass)` instead of `self :: MyClass`. This is because the method might be invoked by the subclasses, while Julia does not support implicit conversions between types.
+
+(**P.P.S**) What is `@like`? Given an OO type `Parent`, any subtype `Child` (also an OO type) inheriting `Parent` satisfies `Child <: @like(Parent)` in Julia, where `<:` is Julia's native subtyping operator. `Child <: Parent` can only be `false` in Julia.
+
+### Default field values
+
+Using this feature, when defining a field for classes/structs, if a default value is provided, then the initialization for this field can be missing in the `@mk` block.
+
 
 ```julia
 function get_default_field2()
@@ -88,75 +124,40 @@ julia> MyType(50)
 MyType(MyType, 50)
 ```
 
-关于默认字段的注意点：
+Some points of the default field values:
+1. there is no performance overhead in using default field values.
+2. when a field has been explicitly initialized in the `@mk` block, the expression of the default field value won't be evaluated.
+3. unlike `Base.@kwdef`, default field values cannot reference each other.
 
-1. 默认字段没有性能开销。
+## Python-style constructors
 
-2. 在`@mk`块显式指定字段初始化时，默认字段的表达式不会被求值。
+The traditional OO languages such Python/C++/Java/C\# do not have native immutable types, so that the jobs of a constructor can be designed as follow:
+1. creating a new instance `self` of the type.
+2. invoking a constructor function to initialize the `self` instance. Side effects are introduced.
 
-3. 默认字段无法访问其他字段。
+TyOOP can support such style for classes (`mutable struct`s), but it is not our best practice.
 
-
-## 类型构造器
-
-上述代码中，`function new(...)`用于定义构造器。
-构造器的返回值应当使用`@mk begin ... end`构造一个当前类型的实例，其中，`begin`语句块中使用`字段名=值`初始化字段。
-
-缺省构造器的行为：
-- 当类型为`class`，所有字段未初始化。
-- 当类型为`struct`，且存在字段，使用Julia生成的构造器(`dataclass`)
-
-构造器可以被重载。对于空间占用为0的结构体(单例类型)，构造器可以省略。
-
-### Python风格的构造器
-
-以往的OO语言，如Python/C++/Java/C#，没有原生的不可变类型，因此构造器函数一般设计为
-1. 创建一个新对象`self`(或this)
-2. 利用构造器参数对`self`进行初始化
-
-Julia也支持这样的构造方式，但只对`mutable struct`有效。写法如下:
+Example:
 
 ```julia
 @oodef mutable struct MySubclass <: {MySuperclass1, MySuperclass2}
     field1
     function new()
-        self = new()
-        set_base!(self, MySuperclass1()) # 初始化基类 MySuperclass1
-        set_base!(self, MySuperclass2()) # 初始化基类 MySuperclass2
-        self.field1 = ... # 初始化字段
+        self = @mk
+        # init fields
+        self.field1 = 1
+        # remember to return self
         return self
     end
 ```
 
-## 实例方法
 
-实例方法须以`function 方法名(类实例, ...)`开头。类实例变量推荐写为`self`。
 
-前面代码里`MyClass`和`MyStruct`都实现了实例方法`f`, 它们的实例，比方说`instance::MyClass`，以`instance.f()`的语法调用该方法。
+## [Inheritances and multiple inheritances](@id inheritance)
 
-```julia
-@oodef mutable struct MyClass
-    a :: Int
-    # ... 省略部分定义
-    function f(self)
-        self.a
-    end
-end
-```
+Here is a simple example of class inheritance.
 
-实例方法支持任意形式的Julia参数，如变长参数，关键字参数，变长关键字参数，默认参数，默认关键字参数。
-
-此外，实例方法支持泛型，且能被重载。
-
-P.S: 如果要标注`self`参数的类型，应该使用`self :: @like(MyClass)`而不是`self :: MyClass`。这是因为实例方法可能被子类调用，而Julia不能支持隐式转换。
-
-P.P.S: 什么是`@like`？对于一个OO类型`Parent`, 任何继承自`Parent`的子类`Child`满足`Child <: @like(Parent)`，其中`<:`是Julia原生的subtyping运算。
-
-## 继承，多继承
-
-下面是一个简单的继承例子。
-
-首先我们定义两个结构体类型。
+We firstly define two structs using `@oodef`:
 
 ```julia
 @oodef struct A
@@ -168,7 +169,8 @@ end
 end
 ```
 
-随后，我们用一个类型`C`继承上面两个类型。
+Then, we define a type `C` to inherit `A` and `B`:
+
 ```julia
 @oodef struct C <: {A, B}
     c :: String
@@ -185,15 +187,13 @@ c = C(1, 2)
 @assert c.b === 2
 ```
 
-可以看到，我们使用在`@mk`块中使用`Base1(arg1, arg2), Base2(arg1, arg2)`来设置基类，这和Python中的`基类.__init__(self, args...)`一致。
+As can be seen, in the `@mk` block, we use `Base1(arg1, arg2), Base2(arg1, arg2)` to call the base classe constructors, which corresponds to `BaseType.__init__(self, arg1, arg2)` in Python.
 
-一个子类可以继承多个基类，当多个基类出现重名属性时，使用C3线性化算法进行method resolution。
+A struct/class can inherit multiple base classes/structs. When name collision happens, we use C3 linearization algorithm to decide which one is to select. We use a variant of C3 to allow more flexible mixin uses.
 
-下面这个例子给了一种常见的继承应用方式： Mixin。
+The following example introduces mixin which is a common use of (multiple) inheritances:
 
-我们定义一个基类，多边形`IPolygon`，它的子类可能有正方形、长方形、三角形乃至一般的多边形，但这些子类都共享一个标准的周长求解算法：将所有边的长度相加。
-
-则多边形的基类，可以用如下代码定义：
+We define a base class `IPolygon` which might have subclasses `Square`, `Rectangle`, `Triangle` or even general polygons. Despite the differences between these possible subclasses, a standard algorithm to compute perimeters is shared: sum up the lengths of all the edges.
 
 ```julia
 using TyOOP
@@ -206,10 +206,10 @@ function distance(source::Point, destination::Point)
 end
 
 @oodef struct IPolygon
-    # 抽象方法
+    # abstract method
     function get_edges end
 
-    # mixin方法
+    # mixin method
     function get_perimeter(self)
         s = 0.0
         vs = self.get_edges() :: AbstractVector{Point}
@@ -227,9 +227,9 @@ end
 end
 ```
 
-利用上述基类`IPolygon`，我们可以实现子类，并复用其中的`get_perimeter`方法。
+Leveraging the above `IPolygon`, we can define subclasses, reusing the `get_perimeter` method.
 
-例如，矩形`Rectangle`：
+For instance, `Rectangle`：
 
 ```julia
 @oodef struct Rectangle <: IPolygon
@@ -258,62 +258,45 @@ end
         ]
     end
 
-    # 对特殊的子类，可以重写 get_perimeter 获得更快的求周长方法
-    # function get_perimeter() ... end
+    # for very special subclasses, we can overwrite
+    # 'get_perimeter' to have a faster version:
+    # function get_perimeter(self) ... end
 end
 
 rect = Rectangle(3.0, 2.0, (5.0, 2.0))
-@assert Arect.get_perimeter() == 10.0
+@assert rect.get_perimeter() == 10.0
 ```
 
-P.S: 由TyOOP定义的OO类型，只能继承其他OO类型。
+P.S: OO types shall only inherit from OO types defined using TyOOP.
 
-## Python风格的properties
+## Python-style properties
 
-在Java中，getter函数(`get_xxx`)和setter(`set_xxx`)函数用来隐藏类型字段的实现细节。
+In Java, the getter functions `get_xxx` and setter functions `set_xxx` are used to encapsulate the implementation details and export more stable APIs.
 
-对于其中冗余，很多语言如Python提供了一种语法糖，允许抽象`self.xxx`和`self.xxx = value`，这就是property。
+The syntactic redundancies involved above can be adddressed by a syntatic sugar, which is named "properties" by many languages such as Python.
 
-TyOOP支持property，有两种方式：
-
-第一种方式是定义`get_xxx`和`set_xxx`函数，这适合Java背景的工作人员过渡：
+TyOOP supports so-called "properties", in the following apprach:
 
 ```julia
 @oodef struct DemoProp
-    function get_value(self)
-        return 100
-    end
-    function set_value(self, value)
-        println("setting $value")
+    @property(value) do
+        get = self -> 100
+        set = (self, value) -> println("setting $value")
     end
 end
 
-# Java风格的getter, setter
-println(DemoProp().get_value()) # => 100
-
-DemoProp().set_value(200) # => setting 200
-```
-
-与此同时，`get_xxx`会自动定义Python风格的getter property。
-
-```julia
-DemoProp().value # => 100
-```
-
-`set_xxx`则会定义Python风格的setter property。
-
-```julia
+println(DemoProp().value) # => 100
 DemoProp().value = 200 # => setting 200
 ```
 
-当熟悉这种抽象后，可以使用第二种方式，这适合Python、C#等背景的工作人员：
+A more practical example is given below:
 
 ```julia
 @oodef mutable struct Square
     side :: Float64
     function new(side::Number)
         @mk begin
-            side = convert(Float64, side)
+            side = side # support auto cast
         end
     end
 
@@ -331,25 +314,24 @@ square.area = 16 # => 16
 square.side # => 4.0
 ```
 
-可以看到，在设置面积的同时，正方形的边长得到相应改变。
+As can be seen, the side length of the square changes accordingly as the area gets changed.
 
-## 高级特性：抽象方法和抽象property
+## [Advanced feature：Abstract methods, and abstract properties](@id advanced_absmeths_and_absprops)
 
 ```julia
 @oodef struct AbstractSizedContainer{ElementType}
 
-    # 定义一个抽象方法
+    # abstract method
     function contains end
 
 
-    # 定义一个抽象getter
+    # abstract property with only getter
     @property(length) do
         get
     end
-    # 也可以定义抽象方法 'get_length'
 end
 
-# 打印未实现的方法（包括property）
+# print not implemented methods (including properties)
 TyOOP.check_abstract(AbstractSizedContainer)
 # =>
 # Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 2 entries:
@@ -381,37 +363,38 @@ my_set.length # => 3
 my_set.contains(2) # => true
 ```
 
-## 高级特性：泛型
+## Advanced feature: Generics
 
-泛型无处不在，业务中常见于容器。
+Generics are pervasive, and in practice very common in data structures.
 
-在[抽象方法](#高级特性抽象方法和抽象property)一节，我们介绍了`AbstractSizedContainer`，可以看到它有一个泛型参数`ElementType`。
+At [Advanced features：Abstract methods, and abstract properties](@ref advanced_absmeths_and_absprops), we have introduced `AbstractSizedContainer`. It has a generic type parameter `ElementType`.
 
 ```julia
 @oodef struct AbstractSizedContainer{ElementType}
+    # (self, ::ElementType) -> Bool
     function contains end
-    function get_length end
+    @property(length) do
+        get
+    end
 end
 ```
 
-虽然在定义时没有用到这个类型，但在子类定义时，该类型参数能用来约束容器的元素类型。
+Although we do not use `ElementType` in the above example, it is useful if we need to specify a container's element type.
 
-TyOOP能使用各种形式的Julia泛型，下面是一些例子。
 ```julia
-# 数字容器
+# containers of only numbers
 @oodef struct AbstactNumberContainer{ElementType <: Number}
     ...
 end
 
-# 用来表示任意类型的可空值
 @oodef struct Optional{T}
     value :: Union{Nothing, Some{T}}
 end
 ```
 
-### 显式泛型类型参数
+### Advanced feature: Explicit generic type parameters
 
-下面的代码给出一个特别的例子，构造器`new`无法从参数类型推断出`MyGenType{A}`中的泛型类型参数`A`。
+The following code shows a special case where the constructor `new` cannot infer the generic type parameter `A` from the arguments:
 
 ```julia
 @oodef struct MyGenType{A}
@@ -422,7 +405,7 @@ end
 end
 ```
 
-在这种情况下，可以显式指定泛型类型参数，构造类型实例：
+In this case, we can explicitly specify the generic type parameters to construct instances:
 
 ```julia
 my_gen_type = MyGenType{String}(1)
@@ -430,13 +413,44 @@ my_gen_type = MyGenType{Number}(1)
 my_gen_type = MyGenType{Vector{Int}}(1)
 ```
 
-## 高级特性：接口
+## Advanced feature: Interfaces
 
-TyOOP支持接口编程：使用`@oodef struct`定义一个没有字段的结构体类型，为它添加一些抽象方法，这样就实现了接口。
+TyOOP supports interface programming. Use `@oodef struct` to define a struct which has no fields, and add some abstract/mixin methods to it, in this way we achieve interface programming.
 
-除开业务上方便对接逻辑外，接口还能帮助抽象。
+Despite the ease of connecting with the real business logic, interfaces also helps to specify proper constraints in your code.
 
-下面的代码基于接口`HasLength`定义一个普通的Julia函数`a_regular_julia_function`：
+### `@like(ootype)`
+
+`@like` transforms a concrete OO type into a special abstract type.
+
+```julia
+julia> @like(HasLength)
+Object{>:var"HasLength::trait"}
+```
+
+In Julia's type system, no concrete type can be inherited. A direct implication is that Julia's multiple dispatch does not accept a subtype instance if the parameter is annotated a base type. 
+
+```julia
+@oodef struct SuperC end
+@oodef struct SubC <: SuperC end
+function f(::SuperC) end
+f(SuperC()) # ok
+f(SubC())   # err
+```
+
+`@like(ootype)` addresses this. A function parameter `@like(HasLength)` accepts instances of any type that is a subtype of `HasLength`.
+
+```julia
+@oodef struct SuperC end
+@oodef struct SubC <: SuperC end
+function f(::@like(SuperC)) end
+f(SuperC()) # ok
+f(SubC())   # ok!
+```
+
+### Examples, and zero-cost abstraction
+
+The following code based on the interface `HasLength` defines a regular Julia function `a_regular_julia_function`:
 
 ```julia
 @oodef struct HasLength
@@ -447,16 +461,11 @@ function a_regular_julia_function(o :: @like(HasLength))
     function some_random_logic(i::Integer)
         (i * 3 + 5) ^ 2
     end
-    some_random_logic(o.get_length()) # 或者 o.length
+    some_random_logic(o.get_length())
 end
 ```
 
-其中，`@like`宏作用将实际类型变成接口类型。
-
-在Julia的类型系统和多重分派中，具体的Julia类型不能被继承；而`@like(ootype)`唯一地将类型`ootype`转为Julia类型系统中能被继承的抽象类型，使得我们的OO系统能和Julia的多重分派一同工作。~~这是本项目的主要含金量。~~
-
-
-现在，我们为`HasLength`实现一个子类`MyList`，作为`Vector`类型的包装：
+Now, we define a substruct `MyList` that inherits from `HasLength`, as the user wrapper of Julia's builtin `Vector` type:
 
 ```julia
 @oodef struct MyList{T} <: HasLength
@@ -477,9 +486,9 @@ a_regular_julia_function(MyList(1, 2, 3)) # 196
 a_regular_julia_function([1]) # error
 ```
 
-可以看到，只有实现了HasLength的OO类型可以应用`a_regular_julia_function`。
+We can see that only the OO type that implements `HasLength` is accepted by `a_regular_julia_function`.
 
-此外，我们指出，对于一个功能，如果在原生Julia实现下没有性能损失，TyOOP的接口编程也同样能不产生性能损失。
+Additionally, we point out that such interface abstraction itself does not introduce any dynamic dispatch. If your code contains only static dispatch, the abstraction is zero-cost.
 
 ```julia
 @code_typed a_regular_julia_function(MyList(1, 2, 3))
@@ -508,62 +517,24 @@ top:
 }
 ```
 
-P.S: 为接口增加默认方法可以实现著名的Mixin抽象。见[继承，多继承](#继承多继承)中的`IPolygon`类型。
+P.S: Concrete methods defined in interfaces lead to a famous abstraction called Mixin. See `IPolygon` type at [Inheritances, and multiple inheritances](@id inheritance).
 
-## `@typed_access`
+## Addressing performance issues via `@typed_access`
 
-Julia点操作符实际上是`getproperty/setproperty!`，因为编译器优化原因，使用Python风格的property会导致类型推导不够精准，降低性能。
-对于可能的性能损失，我们提供`@typed_access`宏，在兼容julia原生语义的条件下，自动优化所有的`a.b`操作。
+Because of the compiler optimization, using methods or Python-style properties might cause inaccurate type inference, and affect performance.
+
+For possible performance issues, we provide `@typed_access`  to automatically optimize all `a.b` operations in Julia-compatible semantics.
 
 ```julia
 @typed_access begin
     instance1.method(instance2.property)
 end
 
-# 等价于
+# <=>
 
-TyOOP.typed_access(instance1, Val(:method))(
-    TyOOP.typed_access(instance, Val(:property))
+TyOOP.getproperty_typed(instance1, Val(:method))(
+    TyOOP.getproperty_typed(instance, Val(:property))
 )
 ```
 
-`@typed_access`让动态分派更慢，让静态分派更快。对于`a.b`，如果`a`的类型被Julia成功推断，则`@typed_access a.b`不会比`a.b`慢。
-
-## Benchmark
-
-我们使用class或struct做嵌套继承，并测试访问基类字段、方法的性能。property是方法语法糖，因此不单独进行测试。
-
-类型hierarchy:
-
-- Base1
-  - 字段: `a`
-  - 方法: `identity_a`(返回实例本身)
-  - 子类: Base2
-    - 字段: `b`
-    - 方法: `identity_b`(返回实例本身)
-    - 子类: Base3
-      - 字段: `c`
-      - 方法: `identity_c`(返回实例本身)
-      - 子类: Base4
-        - 字段: `d`
-        - 方法: `identity_d`(返回实例本身)
-        - 子类: Base5
-          - 字段: `e`
-          - 方法: `identity_e`(返回实例本身)
-
-
-测试结果：
-
-|  测试例子   | class或struct或Python class  | 运行时间 | 说明 |
-|:----:  | :----:  | :----: |:----:|
-| 获取最顶层基类字段 | class | 15.4 ns |  |
-| 获取最顶层基类字段 | struct | 18.3 ns |  |
-| 获取最顶层基类字段 | Python class | 25.6 ns |  inline cache，平均常数时间访问字段 |
-| 调用最顶层方法     | class | 24.8 ns  |  |
-| 调用最顶层方法 | struct | 35.2 ns |  |
-| 调用最顶层方法     | Python class | 63.2 ns  | inline cache，平均常数时间访问方法 |
-| 数组获取基类字段并求和 | class | 19.9 us | |
-| 数组获取基类字段并求和 | struct | 6.64 us | |
-| 数组获取基类字段并求和 | Python class | 410 us | |
-
-注：当使用原生Julia时，连续字段访问与TyOOP访问基类字段，无性能差异；对于方法访问，将实例作为参数直接传递给对应类方法，性能等同于TyOOP的方法调用相同，无论方法是否嵌套。这说明使用TyOOP有助于更方便地达到Julia最佳性能。
+`@typed_access` slows down dynamic calls，but removes overheads of static calls。For `a.b`，if the type of `a` is successfully inferred, then `@typed_access a.b` is strictly faster than `a.b`.

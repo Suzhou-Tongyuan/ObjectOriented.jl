@@ -10,6 +10,9 @@ function try_remove_prefix(f, prefix::Symbol, name::Symbol)
     end
 end
 
+const _has_warn_setter_dep = Ref(false)
+const _has_warn_getter_dep = Ref(false)
+
 function build_multiple_dispatch!(
     ln::LineNumberNode,
     cgi :: CodeGenInfo)
@@ -29,23 +32,32 @@ function build_multiple_dispatch!(
         method_dict[name] = proper_def
     end
     # use 'get_xxx' to generate a getter for 'xxx' & use 'set_xxx' to generate a setter for 'xxx'
-    # for key in collect(keys(method_dict))
-    #     desc :: PropertyDefinition = method_dict[key]
-    #     if desc.kind === MethodKind
-    #         try_remove_prefix(:set_, desc.name) do name
-    #             local key = @setter_prop(name)
-    #             if !haskey(method_dict, key)
-    #                 method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, SetterPropertyKind)
-    #             end
-    #         end
-    #         try_remove_prefix(:get_, desc.name) do name
-    #             local key = @getter_prop(name)
-    #             if !haskey(method_dict, key)
-    #                 method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, GetterPropertyKind)
-    #             end
-    #         end
-    #     end
-    # end
+    for key in collect(keys(method_dict))
+        desc :: PropertyDefinition = method_dict[key]
+        if desc.kind === MethodKind
+            try_remove_prefix(:set_, desc.name) do name
+                if !_has_warn_setter_dep[]
+                    @warn "properties using `set_xxx` are deprecated, use '@property($name) do; set = (self, value) -> statement end' instead."
+                    _has_warn_setter_dep[] = true
+                end
+                
+                local key = @setter_prop(name)
+                if !haskey(method_dict, key)
+                    method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, SetterPropertyKind)
+                end
+            end
+            try_remove_prefix(:get_, desc.name) do name
+                if !_has_warn_getter_dep[]
+                    @warn "properties using `get_xxx` are deprecated, use '@property($name) do; get = (self) -> value end' instead."
+                    _has_warn_getter_dep[] = true
+                end
+                local key = @getter_prop(name)
+                if !haskey(method_dict, key)
+                    method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, GetterPropertyKind)
+                end
+            end
+        end
+    end
     cgi.method_dict = method_dict
     out = cgi.outblock
     base_dict = cgi.base_dict

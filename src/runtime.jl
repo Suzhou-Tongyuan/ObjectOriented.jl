@@ -177,7 +177,8 @@ end
             if isassigned(arguments, indice)
                 return :(error($("resetting property '$fieldname' for class '$T'")))
             end
-            arguments[indice] = :(args[$(2i)])
+            t_field = types[indice]
+            arguments[indice] = :($Base.convert($t_field, args[$(2i)]))
         else
             t = base
             fieldname = sym
@@ -185,7 +186,8 @@ end
             if isassigned(arguments, indice)
                 return :(error($("resetting base type '$t' for class '$T'")))
             end
-            arguments[indice] = :(args[$(2i)])
+            t_field = types[indice]
+            arguments[indice] = :($Base.convert($t_field, args[$(2i)]))
         end
     end
 

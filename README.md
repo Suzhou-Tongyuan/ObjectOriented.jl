@@ -1,15 +1,15 @@
 # TyOOP
 
-[TyOOP](https://github.com/thautwarm/TyOOP.jl) is a complete and mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia, intentionally 
-for Python users.
+[TyOOP](https://github.com/thautwarm/TyOOP.jl) is a mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia, intentionally for Python users.
 
-The supported features:Python
-- using dot operators to access members from the current class or base classes.
+The supported features:
+
 - multiple inheritances
+- using dot operators to access members
+- default field values
 - overloaded constructors and methods
 - Python-style properties (getters and setters)
-- default field values
-- generic support to the OOP System
+- generics for the OOP system
 - interfaces
 
 ## A Simple Example
