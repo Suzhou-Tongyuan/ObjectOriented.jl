@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>TyOOP · TyOOP.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://Suzhou-Tongyuan.github.io/TyOOP.jl/index-cn/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">TyOOP.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../cheat-sheet-en/">Cheat Sheet</a></li><li class="is-active"><a class="tocitem" href>TyOOP</a><ul class="internal"><li><a class="tocitem" href="#OO类型定义"><span>OO类型定义</span></a></li><li><a class="tocitem" href="#Python风格的构造器"><span>Python风格的构造器</span></a></li><li><a class="tocitem" href="#inheritance_cn"><span>继承，多继承</span></a></li><li><a class="tocitem" href="#Python风格的properties"><span>Python风格的properties</span></a></li><li><a class="tocitem" href="#advanced_absmeths_and_absprops_cn"><span>高级特性：抽象方法和抽象property</span></a></li><li><a class="tocitem" href="#高级特性：泛型"><span>高级特性：泛型</span></a></li><li><a class="tocitem" href="#高级特性：接口"><span>高级特性：接口</span></a></li><li><a class="tocitem" href="#用@typed_access解决性能问题"><span>用<code>@typed_access</code>解决性能问题</span></a></li></ul></li><li><a class="tocitem" href="../cheat-sheet-cn/">-</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>TyOOP</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>TyOOP</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Suzhou-Tongyuan/TyOOP.jl/blob/main/docs/src/index-cn.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="TyOOP"><a class="docs-heading-anchor" href="#TyOOP">TyOOP</a><a id="TyOOP-1"></a><a class="docs-heading-anchor-permalink" href="#TyOOP" title="Permalink"></a></h1><p><a href="https://github.com/thautwarm/TyOOP.jl">TyOOP</a>为Julia提供一套相对完整的面向对象机制，设计上主要基于CPython的面向对象，对Julia做了适配。</p><p>其功能一览如下：</p><table><tr><th style="text-align: center">功能名</th><th style="text-align: center">支持</th><th style="text-align: center">注释</th></tr><tr><td style="text-align: center">点操作符</td><td style="text-align: center">是</td><td style="text-align: center"></td></tr><tr><td style="text-align: center">继承</td><td style="text-align: center">是</td><td style="text-align: center">基类、子类不能直接转换</td></tr><tr><td style="text-align: center">构造器和实例方法重载</td><td style="text-align: center">是</td><td style="text-align: center">基于多重分派</td></tr><tr><td style="text-align: center">多继承</td><td style="text-align: center">是</td><td style="text-align: center">MRO基于变种<a href="https://en.wikipedia.org/wiki/C3_linearization">C3算法</a></td></tr><tr><td style="text-align: center">Python风格 properties</td><td style="text-align: center">是</td><td style="text-align: center"></td></tr><tr><td style="text-align: center">默认字段</td><td style="text-align: center">是</td><td style="text-align: center"></td></tr><tr><td style="text-align: center">泛型</td><td style="text-align: center">是</td><td style="text-align: center"></td></tr><tr><td style="text-align: center">接口</td><td style="text-align: center">是</td><td style="text-align: center">使用空结构体类型做基类</td></tr><tr><td style="text-align: center">权限封装(modifiers)</td><td style="text-align: center">否</td><td style="text-align: center">同Python</td></tr><tr><td style="text-align: center">类静态方法</td><td style="text-align: center">否</td><td style="text-align: center">不实现，避免<a href="https://docs.julialang.org/en/v1/manual/style-guide/#Avoid-type-piracy">type piracy</a></td></tr><tr><td style="text-align: center">元类(metaclass)</td><td style="text-align: center">否</td><td style="text-align: center">不实现，推荐宏处理</td></tr></table><p>快速学习请参考<a href="../cheat-sheet-cn/">TyOOP Cheat Sheet</a>.</p><h2 id="OO类型定义"><a class="docs-heading-anchor" href="#OO类型定义">OO类型定义</a><a id="OO类型定义-1"></a><a class="docs-heading-anchor-permalink" href="#OO类型定义" title="Permalink"></a></h2><p>TyOOP支持定义class和struct，class使用<code>@oodef mutable struct</code>开头，struct使用<code>@oodef struct</code>开头。</p><pre><code class="language-julia hljs">using TyOOP
+@oodef struct MyStruct
+    a :: Int
+    function new(a::Int)
+        @mk begin
+            a = a
+        end
+    end
+    function f(self)
+        self.a
+    end
+end
+
+@oodef mutable struct MyClass
+    a :: Int
+    function new(a::Int)
+        @mk begin
+            a = a
+        end
+    end
+    function f(self)
+        self.a
+    end
+end</code></pre><p>上述代码中，<code>function new(...)</code>用于定义构造器。 构造器的返回值应当使用<code>@mk begin ... end</code>构造一个当前类型的实例，其中，<code>begin</code>语句块中使用<code>字段名=值</code>初始化字段。</p><p>缺省构造器的行为：</p><ul><li>当类型为<code>class</code>，所有字段未初始化。</li><li>当类型为<code>struct</code>，且存在字段，使用Julia生成的构造器(<code>dataclass</code>)</li></ul><p>构造器可以被重载。对于空间占用为0的结构体(单例类型)，构造器可以省略。</p><h3 id="实例方法"><a class="docs-heading-anchor" href="#实例方法">实例方法</a><a id="实例方法-1"></a><a class="docs-heading-anchor-permalink" href="#实例方法" title="Permalink"></a></h3><p>实例方法须以<code>function 方法名(类实例, ...)</code>开头。类实例变量推荐命名为<code>self</code>或<code>this</code>。</p><p>前面代码里<code>MyClass</code>和<code>MyStruct</code>都实现了实例方法<code>f</code>, 它们的实例，比方说<code>instance::MyClass</code>，以<code>instance.f()</code>的语法调用该方法。</p><pre><code class="language-julia hljs">@oodef mutable struct MyClass
+    a :: Int
+    # ... 省略部分定义
+    function f(self)
+        self.a
+    end
+end</code></pre><p>实例方法支持任意形式的Julia参数，如变长参数，关键字参数，变长关键字参数，默认参数，默认关键字参数。</p><p>此外，实例方法支持泛型，且能被重载。</p><p>P.S: 如果要标注<code>self</code>参数的类型，应该使用<code>self :: @like(MyClass)</code>而不是<code>self :: MyClass</code>。这是因为实例方法可能被子类调用，而Julia不能支持隐式转换。</p><p>P.P.S: 什么是<code>@like</code>？对于一个OO类型<code>Parent</code>, 任何继承自<code>Parent</code>的子类<code>Child</code>满足<code>Child &lt;: @like(Parent)</code>，其中<code>&lt;:</code>是Julia原生的subtyping运算。</p><h3 id="默认字段"><a class="docs-heading-anchor" href="#默认字段">默认字段</a><a id="默认字段-1"></a><a class="docs-heading-anchor-permalink" href="#默认字段" title="Permalink"></a></h3><p>TyOOP支持默认字段。</p><p>在为类型定义一个字段时，如果为这个字段指定默认值，那么<code>@mk</code>宏允许缺省该字段的初始化。注意，如果不定义<code>new</code>函数并使用<code>@mk</code>宏，默认字段将无效。</p><pre><code class="language-julia hljs">function get_default_field2()
+    println(&quot;default field2!&quot;)
+    return 30
+end
+
+@oodef struct MyType
+    field1 :: DataType = MyType
+    field2 :: Int = get_default_field2()
+
+    function new()
+        return @mk
+    end
+
+    function new(field2::Integer)
+        return @mk field2 = field2
+    end
+end
+
+julia&gt; MyType()
+default field2!
+MyType(MyType, 30)
+
+julia&gt; MyType(50)
+MyType(MyType, 50)</code></pre><p>关于默认字段的注意点：</p><ol><li>默认字段没有性能开销。</li><li>在<code>@mk</code>块显式指定字段初始化时，默认字段的求值表达式不会被执行。</li><li>与<code>Base.@kwdef</code>不同，默认字段的求值表达式无法访问其他字段。</li></ol><h2 id="Python风格的构造器"><a class="docs-heading-anchor" href="#Python风格的构造器">Python风格的构造器</a><a id="Python风格的构造器-1"></a><a class="docs-heading-anchor-permalink" href="#Python风格的构造器" title="Permalink"></a></h2><p>以往的OO语言，如Python/C++/Java/C#，没有原生支持的不可变类型，因此构造器的工作一般设计为：</p><ol><li>创建一个新对象<code>self</code>(或this)</li><li>利用构造器参数对<code>self</code>进行初始化</li></ol><p>Julia也支持这样的构造方式，但只对<code>mutable struct</code>有效，且不推荐。写法如下:</p><pre><code class="language-julia hljs">@oodef mutable struct MySubclass &lt;: {MySuperclass1, MySuperclass2}
+    field1
+    function new()
+        self = @mk
+        # 初始化字段
+        self.field1 = 1
+        ## 记住需要返回
+        return self
+    end</code></pre><h2 id="inheritance_cn"><a class="docs-heading-anchor" href="#inheritance_cn">继承，多继承</a><a id="inheritance_cn-1"></a><a class="docs-heading-anchor-permalink" href="#inheritance_cn" title="Permalink"></a></h2><p>下面是一个简单的继承例子。</p><p>首先我们用<code>@oodef</code>定义两个结构体类型:</p><pre><code class="language-julia hljs">@oodef struct A
+    a :: Int
+end
+
+@oodef struct B
+    b :: Int
+end</code></pre><p>随后，我们用一个类型<code>C</code>继承上面两个类型。</p><pre><code class="language-julia hljs">@oodef struct C &lt;: {A, B}
+    c :: String
+    function new(a::Int, b::Int, c::String = &quot;somestring&quot;)
+        @mk begin
+            A(a), B(b)
+            c = c
+        end
+    end
+end
+
+c = C(1, 2)
+@assert c.a === 1
+@assert c.b === 2</code></pre><p>可以看到，我们使用在<code>@mk</code>块中使用<code>Base1(arg1, arg2), Base2(arg1, arg2)</code>来设置基类，这和Python中的<code>基类.__init__(self, args...)</code>一致。</p><p>一个子类可以继承多个基类，当多个基类出现重名属性时，使用C3线性化算法来选取成员。我们使用的C3算法是一个变种，能允许更灵活的mixin抽象。</p><p>下面给出一个mixin的例子。mixin是继承的一种常见应用：</p><p>我们定义一个基类，多边形<code>IPolygon</code>，它的子类可能有正方形、长方形、三角形乃至一般的多边形，但这些子类都共享一个标准的周长求解算法：将所有边的长度相加。</p><p>则多边形的基类，可以用如下代码定义：</p><pre><code class="language-julia hljs">using TyOOP
+
+const Point = Tuple{Float64, Float64}
+function distance(source::Point, destination::Point)
+    sqrt(
+        (destination[1] - source[1]) ^ 2 +
+        (destination[2] - source[2]) ^ 2)
+end
+
+@oodef struct IPolygon
+    # 抽象方法
+    function get_edges end
+
+    # mixin方法
+    function get_perimeter(self)
+        s = 0.0
+        vs = self.get_edges() :: AbstractVector{Point}
+        if length(vs) &lt;= 1
+            0.0
+        end
+        last = vs[1] :: Point
+        for i = 2:length(vs)
+            s += distance(vs[i], last)
+            last = vs[i]
+        end
+        s += distance(vs[end], vs[1])
+        return s
+    end
+end</code></pre><p>利用上述基类<code>IPolygon</code>，我们可以实现子类，并复用其中的<code>get_perimeter</code>方法。</p><p>例如，矩形<code>Rectangle</code>：</p><pre><code class="language-julia hljs">@oodef struct Rectangle &lt;: IPolygon
+    width :: Float64
+    height :: Float64
+    center :: Point
+
+    function new(width::Float64, height::Float64, center::Point)
+        @mk begin
+            width = width
+            height = height
+            center = center
+        end
+    end
+
+    function get_edges(self)
+        x0 = self.center[1]
+        y0 = self.center[2]
+        h = self.height / 2
+        w = self.width / 2
+        Point[
+            (x0 - w, y0 - h),
+            (x0 - w, y0 + h),
+            (x0 + w, y0 + h),
+            (x0 + w, y0 - h)
+        ]
+    end
+
+    # 对特殊的子类，可以重写 get_perimeter 获得更快的求周长方法
+    # function get_perimeter() ... end
+end
+
+rect = Rectangle(3.0, 2.0, (5.0, 2.0))
+@assert rect.get_perimeter() == 10.0</code></pre><p>P.S: 由TyOOP定义的OO类型，只能继承其他OO类型。</p><h2 id="Python风格的properties"><a class="docs-heading-anchor" href="#Python风格的properties">Python风格的properties</a><a id="Python风格的properties-1"></a><a class="docs-heading-anchor-permalink" href="#Python风格的properties" title="Permalink"></a></h2><p>在Java中，getter函数(<code>get_xxx</code>)和setter(<code>set_xxx</code>)函数用来隐藏实现细节，暴露稳定的API。</p><p>对于其中冗余，很多语言如Python提供了一种语法糖，允许抽象<code>self.xxx</code>和<code>self.xxx = value</code>，这就是property。</p><p>TyOOP支持property，用以下的方式：</p><pre><code class="language-julia hljs">@oodef struct DemoProp
+    @property(value) do
+        get = self -&gt; 100
+        set = (self, value) -&gt; println(&quot;setting $value&quot;)
+    end
+end
+
+println(DemoProp().value) # =&gt; 100
+DemoProp().value = 200 # =&gt; setting 200</code></pre><p>下面是一个更加实际的例子：</p><pre><code class="language-julia hljs">@oodef mutable struct Square
+    side :: Float64
+    function new(side::Number)
+        @mk begin
+            side = convert(Float64, side)
+        end
+    end
+
+    @property(area) do
+        get = self -&gt; self.side ^ 2
+        set = function (self, value)
+            self.side = sqrt(value)
+        end
+    end
+end
+
+square = Square(5) # =&gt; Square(5.0)
+square.area # =&gt; 25.0
+square.area = 16 # =&gt; 16
+square.side # =&gt; 4.0</code></pre><p>可以看到，在设置面积的同时，正方形的边长得到相应改变。</p><h2 id="advanced_absmeths_and_absprops_cn"><a class="docs-heading-anchor" href="#advanced_absmeths_and_absprops_cn">高级特性：抽象方法和抽象property</a><a id="advanced_absmeths_and_absprops_cn-1"></a><a class="docs-heading-anchor-permalink" href="#advanced_absmeths_and_absprops_cn" title="Permalink"></a></h2><pre><code class="language-julia hljs">@oodef struct AbstractSizedContainer{ElementType}
+
+    # 定义一个抽象方法
+    function contains end
+
+
+    # 定义一个抽象getter
+    @property(length) do
+        get
+    end
+end
+
+# 打印未实现的方法（包括property）
+TyOOP.check_abstract(AbstractSizedContainer)
+# =&gt;
+# Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 2 entries:
+#  contains (getter) =&gt; PropertyDefinition(:contains, missing, AbstractSizedContainer, MethodKind)
+#  length (getter)   =&gt; PropertyDefinition(:length, missing, AbstractSizedContainer, GetterPropertyKind)
+
+@oodef struct MyNumSet{E &lt;: Number} &lt;: AbstractSizedContainer{E}
+    inner :: Set{E}
+    function new(args::E...)
+        @mk begin
+            inner = Set{E}(args)
+        end
+    end
+
+    # if no annotations for &#39;self&#39;,
+    # annotations and type parameters can be added like:
+    # &#39;function contains(self :: @like(MySet{E}), e::E) where E&#39;
+    function contains(self, e::E)
+        return e in self.inner
+    end
+
+    @property(length) do
+        get = self -&gt; length(self.inner)
+    end
+end
+
+my_set = MySet(1, 2, 3)
+my_set.length # =&gt; 3
+my_set.contains(2) # =&gt; true</code></pre><h2 id="高级特性：泛型"><a class="docs-heading-anchor" href="#高级特性：泛型">高级特性：泛型</a><a id="高级特性：泛型-1"></a><a class="docs-heading-anchor-permalink" href="#高级特性：泛型" title="Permalink"></a></h2><p>泛型无处不在，业务中常见于容器。</p><p>在<a href="#advanced_absmeths_and_absprops_cn">抽象方法</a>一节，我们介绍了<code>AbstractSizedContainer</code>，可以看到它有一个泛型参数<code>ElementType</code>。</p><pre><code class="language-julia hljs">@oodef struct AbstractSizedContainer{ElementType}
+    # (self, ::ElementType) -&gt; Bool
+    function contains end
+    function get_length end
+end</code></pre><p>虽然在定义时没有用到这个类型，但在子类定义时，该类型参数能用来约束容器的元素类型。</p><p>TyOOP支持各种形式的Julia泛型，下面是一些例子。</p><pre><code class="language-julia hljs"># 数字容器
+@oodef struct AbstactNumberContainer{ElementType &lt;: Number}
+    ...
+end
+
+# 用来表示任意类型的可空值
+@oodef struct Optional{T}
+    value :: Union{Nothing, Some{T}}
+end</code></pre><h3 id="高级特性：显式泛型类型参数"><a class="docs-heading-anchor" href="#高级特性：显式泛型类型参数">高级特性：显式泛型类型参数</a><a id="高级特性：显式泛型类型参数-1"></a><a class="docs-heading-anchor-permalink" href="#高级特性：显式泛型类型参数" title="Permalink"></a></h3><p>下面的代码给出一个特别的例子，构造器<code>new</code>无法从参数类型推断出泛型类型参数<code>A</code>。</p><pre><code class="language-julia hljs">@oodef struct MyGenType{A}
+    a :: Int
+    function new(a::Int)
+        new{A}(a)
+    end
+end</code></pre><p>在这种情况下，可以显式指定泛型类型参数，构造类型实例：</p><pre><code class="language-julia hljs">my_gen_type = MyGenType{String}(1)
+my_gen_type = MyGenType{Number}(1)
+my_gen_type = MyGenType{Vector{Int}}(1)</code></pre><h2 id="高级特性：接口"><a class="docs-heading-anchor" href="#高级特性：接口">高级特性：接口</a><a id="高级特性：接口-1"></a><a class="docs-heading-anchor-permalink" href="#高级特性：接口" title="Permalink"></a></h2><p>TyOOP支持接口编程：使用<code>@oodef struct</code>定义一个没有字段的结构体类型，为它添加一些抽象方法，这样就实现了接口。</p><p>除开业务上方便对接逻辑外，接口还能为代码提供合适的约束。</p><h3 id="@like(ootype)"><a class="docs-heading-anchor" href="#@like(ootype)"><code>@like(ootype)</code></a><a id="@like(ootype)-1"></a><a class="docs-heading-anchor-permalink" href="#@like(ootype)" title="Permalink"></a></h3><p><code>@like</code> 将具体的OO类型转为某种特殊的Julia抽象类型。</p><pre><code class="language-julia hljs">julia&gt; @like(HasLength)
+Object{&gt;:var&quot;HasLength::trait&quot;}</code></pre><p>在Julia的类型系统中，具体类型不能被继承。其直接影响是，Julia的多重分派无法接受子类实例，如果参数标注为父类。</p><pre><code class="language-julia hljs">@oodef struct SuperC end
+@oodef struct SubC &lt;: SuperC end
+function f(::SuperC) end
+f(SuperC()) # ok
+f(SubC())   # err</code></pre><p><code>@like(ootype)</code> 很好地解决了这一问题。类型标注为<code>@like(HasLength)</code>的函数参量可以接受<code>HasLength</code>的任意子类型。</p><pre><code class="language-julia hljs">@oodef struct SuperC end
+@oodef struct SubC &lt;: SuperC end
+function f(::@like(SuperC)) end
+f(SuperC()) # ok
+f(SubC())   # ok!</code></pre><h3 id="例子，和零开销抽象"><a class="docs-heading-anchor" href="#例子，和零开销抽象">例子，和零开销抽象</a><a id="例子，和零开销抽象-1"></a><a class="docs-heading-anchor-permalink" href="#例子，和零开销抽象" title="Permalink"></a></h3><p>基于下面定义的接口<code>HasLength</code>，我们定义一个普通的Julia函数<code>a_regular_julia_function</code>：</p><pre><code class="language-julia hljs">@oodef struct HasLength
+    function get_length end
+end
+
+function a_regular_julia_function(o :: @like(HasLength))
+    function some_random_logic(i::Integer)
+        (i * 3 + 5) ^ 2
+    end
+    some_random_logic(o.get_length())
+end</code></pre><p>现在，我们为<code>HasLength</code>实现一个子类<code>MyList</code>，作为<code>Vector</code>类型的包装：</p><pre><code class="language-julia hljs">@oodef struct MyList{T} &lt;: HasLength
+    inner :: Vector{T}
+
+    function new(elts::T...)
+        @mk begin
+            inner = collect(T, elts)
+        end
+    end
+
+    function get_length(self)
+        length(self.inner)
+    end
+end
+
+a_regular_julia_function(MyList(1, 2, 3)) # 196
+a_regular_julia_function([1]) # error</code></pre><p>可以看到，只有实现了HasLength的OO类型可以应用<code>a_regular_julia_function</code>。</p><p>此外，我们指出，TyOOP的接口编程本身不导致动态分派。如果代码是静态分派的，抽象是零开销的。</p><pre><code class="language-julia hljs">@code_typed a_regular_julia_function(MyList(1, 2, 3))
+CodeInfo(
+1 ─ %1 = (getfield)(o, :inner)::Vector{Int64}
+│   %2 = Base.arraylen(%1)::Int64
+│   %3 = Base.mul_int(%2, 3)::Int64
+│   %4 = Base.add_int(%3, 5)::Int64
+│   %5 = Base.mul_int(%4, %4)::Int64
+└──      return %5
+) =&gt; Int64
+
+julia&gt; @code_llvm a_regular_julia_function(MyList(1, 2, 3))
+;  @ REPL[6]:1 within `a_regular_julia_function`
+; Function Attrs: uwtable
+define i64 @julia_a_regular_julia_function_1290({ {}* }* nocapture nonnull readonly align 8 dereferenceable(8) %0) #0 {
+top:
+    %1 = bitcast { {}* }* %0 to { i8*, i64, i16, i16, i32 }**
+    %2 = load atomic { i8*, i64, i16, i16, i32 }*, { i8*, i64, i16, i16, i32 }** %1 unordered, align 8
+    %3 = getelementptr inbounds { i8*, i64, i16, i16, i32 }, { i8*, i64, i16, i16, i32 }* %2, i64 0, i32 1
+    %4 = load i64, i64* %3, align 8
+    %5 = mul i64 %4, 3
+    %6 = add i64 %5, 5
+    %7 = mul i64 %6, %6
+  ret i64 %7
+}</code></pre><p>P.S: 为接口增加默认方法可以实现著名的Mixin抽象。见<a href="@id inheritance_cn">继承，多继承</a>中的<code>IPolygon</code>类型。</p><h2 id="用@typed_access解决性能问题"><a class="docs-heading-anchor" href="#用@typed_access解决性能问题">用<code>@typed_access</code>解决性能问题</a><a id="用@typed_access解决性能问题-1"></a><a class="docs-heading-anchor-permalink" href="#用@typed_access解决性能问题" title="Permalink"></a></h2><p>因为编译器优化原因，使用Python风格的property会导致类型推导不够精准，降低性能。 对于可能的性能损失，我们提供<code>@typed_access</code>宏，在兼容julia原生语义的条件下，自动优化所有的<code>a.b</code>操作。</p><pre><code class="language-julia hljs">@typed_access begin
+    instance1.method(instance2.property)
+end
+
+# 等价于
+
+TyOOP.typed_access(instance1, Val(:method))(
+    TyOOP.typed_access(instance, Val(:property))
+)</code></pre><p><code>@typed_access</code>让动态分派更慢，让静态分派更快。对于<code>a.b</code>，如果<code>a</code>的类型被Julia成功推断，则<code>@typed_access a.b</code>不会比<code>a.b</code>慢。</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cheat-sheet-en/">« Cheat Sheet</a><a class="docs-footer-nextpage" href="../cheat-sheet-cn/">- »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Wednesday 6 July 2022 08:10">Wednesday 6 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cheat Sheet · TyOOP.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://Suzhou-Tongyuan.github.io/TyOOP.jl/cheat-sheet-en/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">TyOOP.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Cheat Sheet</a><ul class="internal"><li><a class="tocitem" href="#TyOOP-cheat-sheet"><span>TyOOP cheat sheet</span></a></li></ul></li><li><a class="tocitem" href="../index-cn/">TyOOP</a></li><li><a class="tocitem" href="../cheat-sheet-cn/">-</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Cheat Sheet</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cheat Sheet</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Suzhou-Tongyuan/TyOOP.jl/blob/main/docs/src/cheat-sheet-en.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="TyOOP-cheat-sheet"><a class="docs-heading-anchor" href="#TyOOP-cheat-sheet">TyOOP cheat sheet</a><a id="TyOOP-cheat-sheet-1"></a><a class="docs-heading-anchor-permalink" href="#TyOOP-cheat-sheet" title="Permalink"></a></h2><p>TyOOP has provided relatively complete object-oriented programming support for Julia. It supports multiple inheritances, dot-operator access to members, Python-style properties and interface proramming.</p><h3 id=".-Type-definition"><a class="docs-heading-anchor" href="#.-Type-definition">1. Type definition</a><a id=".-Type-definition-1"></a><a class="docs-heading-anchor-permalink" href="#.-Type-definition" title="Permalink"></a></h3><p>Define immutable OO structs:</p><pre><code class="language-julia hljs">@oodef struct ImmutableData
+    x :: Int
+    y :: Int
+
+    function new(x::Int, y::Int) 
+        @mk begin
+            x = x
+            y = y
+        end
+    end
+end
+
+d = ImmutableData(1, 2)
+x = d.x</code></pre><p><code>new</code>is the constructor. Constructs and methods can be overloaded.</p><p>A <code>@mk</code> block creates an instance for the current struct/class. Inside the block, an assignment statement <code>a = b</code> initializes the field <code>a</code> with the expression <code>b</code>; a call statement like <code>BaseType(arg1, arg2)</code> calls the constructor of the base class/struct <code>BaseType</code>.</p><p>Defining OO classes (mutable structs):</p><pre><code class="language-julia hljs">@oodef mutable struct MutableData
+    x :: Int
+    y :: Int
+
+    function new(x::Int, y::Int) 
+        @mk begin
+            x = x
+            y = y
+        end
+    end
+end
+
+mt = MutableData(1, 2)
+mt.x += 1</code></pre><h4 id="Default-field-values"><a class="docs-heading-anchor" href="#Default-field-values">Default field values</a><a id="Default-field-values-1"></a><a class="docs-heading-anchor-permalink" href="#Default-field-values" title="Permalink"></a></h4><p>Using this feature, when defining a field for classes/structs, if a default value is provided, then the initialization for this field can be missing in the <code>@mk</code> block.</p><pre><code class="language-julia hljs">function get_default_field2()
+    println(&quot;default field2!&quot;)
+    return 30
+end
+
+@oodef struct MyType
+    field1 :: DataType = MyType
+    field2 :: Int = get_default_field2()
+
+    function new()
+        return @mk
+    end
+
+    function new(field2::Integer)
+        return @mk field2 = field2
+    end
+end
+
+julia&gt; MyType()
+default field2!
+MyType(MyType, 30)
+
+julia&gt; MyType(50)
+MyType(MyType, 50)</code></pre><p>Some points of the default field values:</p><ol><li>there is no performance overhead in using default field values.</li><li>when a field has been explicitly initialized in the <code>@mk</code> block, the expression of the default field value won&#39;t be evaluated.</li><li>unlike <code>Base.@kwdef</code>, default field values cannot reference each other.</li></ol><h3 id=".-继承"><a class="docs-heading-anchor" href="#.-继承">2. 继承</a><a id=".-继承-1"></a><a class="docs-heading-anchor-permalink" href="#.-继承" title="Permalink"></a></h3><pre><code class="language-julia hljs">@oodef mutable struct Animal
+    name :: String
+    function new(theName::String)
+        @mk begin
+            name = theName
+        end
+    end
+
+    function move(self, distanceInMeters::Number = 0)
+        println(&quot;$(self.name) moved $(distanceInMeters)&quot;)
+    end
+end
+
+@oodef mutable struct Snake &lt;: Animal
+    function new(theName::String)
+        @mk begin
+            Animal(theName) # 初始化基类
+        end
+    end
+
+    function snake_check(self)
+        println(&quot;Calling a snake specific method!&quot;)
+    end
+end
+
+sam = Snake(&quot;Sammy the Python&quot;)
+sam.move()
+# Sammy the Python moved 0
+sam.snake_check()
+# Calling a snake specific method!</code></pre><p><strong>CAUTION</strong>:</p><pre><code class="language-julia hljs">Snake &lt;: Animal # false
+Snake(&quot;xxx&quot;) isa Animal # false</code></pre><p>Note that Julia&#39;s native type system does not understand the subtyping relationship between two oo classes! See <a href="@ref interface_polymorphism_cn">Interface-based polymorphism</a> for more details.</p><p>Use the following methods to test inheritance relationship:</p><pre><code class="language-julia hljs">issubclass(Snake, Animal) # true
+isinstance(Snake(&quot;xxx&quot;), Animal) # true
+Snake(&quot;xxx&quot;) isa @like(Animal) # true</code></pre><h3 id=".-Python-style-properties"><a class="docs-heading-anchor" href="#.-Python-style-properties">4. Python-style properties</a><a id=".-Python-style-properties-1"></a><a class="docs-heading-anchor-permalink" href="#.-Python-style-properties" title="Permalink"></a></h3><pre><code class="language-julia hljs">@oodef mutable struct Square
+    side :: Float64
+
+    @property(area) do
+        get = self -&gt; self.side ^ 2
+        set = (self, value::Number) -&gt; self.side = convert(Float64, sqrt(value))
+    end
+end
+
+square = Square()
+square.side = 10
+# call getter
+square.area # 100.0
+
+# call setter
+square.area = 25
+square.side # 5.0</code></pre><h3 id=".-Interfaces"><a class="docs-heading-anchor" href="#.-Interfaces">5. Interfaces</a><a id=".-Interfaces-1"></a><a class="docs-heading-anchor-permalink" href="#.-Interfaces" title="Permalink"></a></h3><p>An interface in TyOOP means an OO struct type which satisfies <code>sizeof(interface) == 0</code>.</p><p>Interface constructors are auto-generated, but custom constructors are allowed.</p><p>The following <code>HasLength</code> is an interface.</p><pre><code class="language-julia hljs">@oodef struct HasLength
+    @property(len) do
+        get  # abstract getter property
+    end
+end
+
+@oodef struct Fillable
+    function fill! end # an empty function means abstract method
+
+    # define an abstract property  to set all values
+    @property(allvalue) do
+        set
+    end
+end
+
+@oodef struct MyVector{T} &lt;: {HasLength, Fillable}  # multiple inheritance
+    xs :: Vector{T}
+    function new(xs::Vector{T})
+        @mk begin
+            xs = xs
+        end
+    end
+end
+
+check_abstract(MyVector)
+# Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 3 entries:
+#   fill! (getter)    =&gt; PropertyDefinition(:fill!, missing, :((Main).Fillable), MethodKind)
+#   len (getter)      =&gt; PropertyDefinition(:len, missing, :((Main).HasLength), GetterPropertyKind)
+#   allvalue (setter) =&gt; PropertyDefinition(:allvalue, missing, :((Main).Fillable), SetterPropertyKind)</code></pre><p><code>check_abstract(MyVector)</code> is not empty. This means <code>MyVector</code> is abstract (more accurately, shall not be instantiated). Otherwise, implementing <code>len</code>, <code>fill!</code>和<code>allvalue</code> is required.</p><pre><code class="language-julia hljs">@oodef struct MyVector{T} &lt;: {HasLength, Fillable}  # multiple inheritance
+    xs :: Vector{T}
+    function new(xs::Vector{T})
+        @mk begin
+            xs = xs
+        end
+    end
+
+    # add the following definitions to 
+    # implement `HasLength` and `Fillable`
+    @property(len) do
+        get = self -&gt; length(self.xs)
+    end
+
+    @property(allvalue) do
+        set = (self, value::T) -&gt; fill!(self.xs, value)
+    end
+
+    function fill!(self, v::T)
+        self.allvalue = v
+    end
+end
+
+vec = MyVector([1, 2, 3])
+vec.allvalue = 4
+vec
+# MyVector{Int64}([4, 4, 4], HasLength(), Fillable())
+vec.len
+# 3
+vec.fill!(10)
+vec
+# MyVector{Int64}([10, 10, 10], HasLength(), Fillable())</code></pre><p>In addition, the most important reason for interfaces is the interface-based polymorphism. See <a href="@ref interface_polymorphism_cn">Interface-based polymorphism</a>.</p><h3 id=".-多继承"><a class="docs-heading-anchor" href="#.-多继承">6. 多继承</a><a id=".-多继承-1"></a><a class="docs-heading-anchor-permalink" href="#.-多继承" title="Permalink"></a></h3><p>MRO (Method resolution order) is using Python&#39;s C3 algorithm, so the behaviour is mostly identical to Python. The major difference is that the order of inheriting mixin classes is less strict.</p><p>MRO(方法解析顺序)使用Python C3算法，所以多继承行为与Python一样。</p><pre><code class="language-julia hljs">@oodef struct A
+    function calla(self) &quot;A&quot; end
+    function call(self) &quot;A&quot; end
+end
+
+@oodef struct B &lt;: A
+    function callb(self) &quot;B&quot; end
+    function call(self) &quot;B&quot; end
+end
+
+@oodef mutable struct C &lt;: A
+    function callc(self) &quot;C&quot; end
+    function call(self) &quot;C&quot; end
+end
+
+@oodef struct D &lt;: {A, C, B}
+    function new()
+        @mk begin
+            A() # can omit. A is interface.
+            B() # can omit. B is interface.
+            C() # cannot omit. C is class (mutable struct).
+            # you can also write them in one line:
+            # A(), B(), C()
+        end
+    end
+end
+
+d = D()
+d.calla() # A
+d.callb() # B
+d.callc() # C
+d.call() # C
+[x[1] for x in ootype_mro(typeof(d))]
+# 4-element Vector{DataType}:
+#  D
+#  C
+#  B
+#  A</code></pre><h3 id=".-[Interface-based-polymorphism](@id-interface_polymorphism_cn)"><a class="docs-heading-anchor" href="#.-[Interface-based-polymorphism](@id-interface_polymorphism_cn)">7. <a href="@id interface_polymorphism_cn">Interface-based polymorphism</a></a><a id=".-[Interface-based-polymorphism](@id-interface_polymorphism_cn)-1"></a><a class="docs-heading-anchor-permalink" href="#.-[Interface-based-polymorphism](@id-interface_polymorphism_cn)" title="Permalink"></a></h3><p>The following example shows an inproper use of the base class (<code>A</code>):</p><pre><code class="language-julia hljs">@oodef struct A end
+@oodef struct B &lt;: A end
+myapi(x :: A) = println(&quot;do something!&quot;)
+
+myapi(A())
+# do something!
+
+myapi(B())
+# ERROR: MethodError: no method matching myapi(::B)</code></pre><p>Remember that Julia&#39;s type system does not understand the subtyping relationship between two OO classes!</p><p>If you expect <code>myapi</code>  to accept <code>A</code> or <code>A</code>&#39;s subtypes, you should do this:</p><pre><code class="language-julia hljs">myapi(x :: @like(A)) = println(&quot;do something!&quot;)
+
+myapi(B())
+# do something!
+
+myapi([])
+# ERROR: MethodError: no method matching myapi(::Vector{Any})</code></pre><h3 id=".-A-machine-learning-example"><a class="docs-heading-anchor" href="#.-A-machine-learning-example">8. A machine learning example</a><a id=".-A-machine-learning-example-1"></a><a class="docs-heading-anchor-permalink" href="#.-A-machine-learning-example" title="Permalink"></a></h3><p>In the following code, we implement a machine learning model trained using least squares and make it support the ScikitLearn interface (ScikitLearnBase.jl) in Julia. With the following code, users can call this model as if it were a normal ScikitLearn.jl model, and can use this model in the MLJ machine learning framework, regardless of whether the model is implemented by object-oriented features or multiple dispatch.</p><pre><code class="language-julia hljs">using TyOOP
+
+@oodef struct AbstractMLModel{X, Y}
+    function fit! end
+    function predict end
+end
+
+using LsqFit
+
+@oodef mutable struct LsqModel{M&lt;:Function} &lt;: AbstractMLModel{Vector{Float64},Vector{Float64}}
+    model :: M  # a function to represent the model&#39;s formula
+    param :: Vector{Float64}
+
+    function new(m::M, init_param::Vector{Float64})
+        @mk begin
+            model = m
+            param = init_param
+        end
+    end
+
+    function fit!(self, X::Vector{Float64}, y::Vector{Float64})
+        fit = curve_fit(self.model, X, y, self.param)
+        self.param = fit.param
+        self
+    end
+
+    function predict(self, x::Float64)
+        self.predict([x])
+    end
+
+    function predict(self, X::Vector{Float64})
+        return self.model(X, self.param)
+    end
+end
+
+# the example comes from https://github.com/JuliaNLSolvers/LsqFit.jl
+
+@. model(x, p) = p[1] * exp(-x * p[2])
+clf = LsqModel(model, [0.5, 0.5])
+ptrue = [1.0, 2.0]
+xdata = collect(range(0, stop = 10, length = 20));
+ydata = collect(model(xdata, ptrue) + 0.01 * randn(length(xdata)));
+
+clf.fit!(xdata, ydata) # train
+clf.predict(xdata)     # predict
+clf.param              # inspect model parameters
+
+# ScikitLearnBase provides us two interface functions &#39;fit!&#39; and &#39;predict&#39;.
+# Now, we connect the TyOOP interface with Julia&#39;s idiomatic interface
+# via &#39;@like(...)&#39;.
+
+using ScikitLearnBase
+ScikitLearnBase.is_classifier(::@like(AbstractMLModel)) = true
+ScikitLearnBase.fit!(clf::@like(AbstractMLModel{X, Y}), x::X, y::Y) where {X, Y} = clf.fit!(x, y)
+ScikitLearnBase.predict(clf::@like(AbstractMLModel{X}), x::X) where X = clf.predict(x)
+
+ScikitLearnBase.fit!(clf, xdata, ydata)
+ScikitLearnBase.predict(clf, xdata)</code></pre><h3 id=".-Performance-issues"><a class="docs-heading-anchor" href="#.-Performance-issues">9. Performance issues</a><a id=".-Performance-issues-1"></a><a class="docs-heading-anchor-permalink" href="#.-Performance-issues" title="Permalink"></a></h3><p>Code generated by TyOOP does not introduce any overhead, but recursions of dot operations (<code>Base.getproperty(...)</code>) do have some issues concerning type inference (e.g., <a href="https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm">this example</a>). Although in most cases, the code produced by TyOOP is very efficient, the return type might suddenly becomes <code>Any</code> or some <code>Union</code> type.</p><p>This might cause performance issues, but only in enumerable cases that have been well understood:</p><ol><li>Using Python-style properties</li><li>Visiting another member in methods, the member will recursively perform dot operations (<code>Base.getproperty</code>).</li></ol><p>The solution is easy: use <code>@typed_access</code> to wrap a block of code which might suffer from above issues.</p><pre><code class="language-julia hljs">@typed_access my_instance.method()
+@typed_access my_instance.property</code></pre><p><strong>CAUTION</strong>: please make sure that the type of the above <code>my_instance</code> is inferred when using <code>@typed_access</code>. Using <code>@typed_acccess</code> in dynamic code will damage your performance.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../index-cn/">TyOOP »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Wednesday 6 July 2022 08:10">Wednesday 6 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
