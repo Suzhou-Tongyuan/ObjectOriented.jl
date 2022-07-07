@@ -10,7 +10,6 @@ This article aims at telling people how to translate serious OOP code into idiom
 - Julia representation of class methods
 - Julia representation of inheritance
 - Julia representation of interfaces
-- The issue of translating OOP into Julia
 
 ### Julia representation of class constructors
 
@@ -50,7 +49,7 @@ However, achieving what OOP guys need is convenient and even mechanical. "Conven
 
 We post the solution as follow. For readability, the code is simplified and the functionality is incomplete in corner cases.
 
-The solution has 2 parts, the first one is the library code which is not very readable, but users are not responsible to implement by user; the second part is the user code, it is readable and concise, exactly like what in Python.
+The solution has 2 parts, the first one is the library code which is not very readable, but it is not responsible for users to implement; the second part is the user code, it is readable and concise, exactly like what in Python.
 
 #### [Library code](@id lib_constructor)
 
@@ -98,7 +97,7 @@ MyClass(1)
 
 If we mark the functions `new`, `init` or `(::Type{Cls})` with `@inline`, the code becomes as efficient as in C/C++.
 
-However, Julia does not adopt this solution. There are many reasons, but the key one is that Julia has native support for immutability. Mutable classes can be created without initializing fields, and get modified later, while immutable structs never support this. 
+However, Julia does not adopt this solution. There are many reasons, but the key one is that Julia has native support for immutability. Mutable classes can be created without initializing fields but modified later, while immutable structs never support this. 
 
 ```julia
 struct Data
@@ -110,13 +109,13 @@ data.a = 2
 ERROR: setfield!: immutable struct of type Data cannot be changed
 ```
 
-The old and popular approach to object construction works in the old world, but using it for a language providing new features (like immutability) is not deemed a good idea. The old solution can be provided as a library, but it discourages the use of the good features such as immutability.
+The old and popular approach to object construction, like Python's `__init__`, works in the old world, but using it for a language providing new features (like immutability) is not deemed a good idea. The old solution can be provided as a library, but it discourages the use of the good features such as immutability.
 
 TyOOP provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for boths mutable structs and immutable structs.
 
 ### Julia representation of class methods
 
-"I need dot operators!" This is what I am hearing about every day.
+"I need dot operators!" This is recently what I am hearing about every day.
 
 In Python, we can have such simple code:
 
@@ -131,7 +130,7 @@ class MyClass2:
 MyClass2(1).double() # => 2
 ```
 
-In Julia, field accessing is using dot operators, while method accessing is not related to instances or even types. Methods are defined juxtaposing the structs.
+However, in Julia, field accessing is using dot operators, while method accessing is not related to instances or even types. Methods are defined juxtaposing the structs.
 
 ```julia
 struct MyClass2
@@ -143,9 +142,9 @@ double(self) = self.a * 2
 double(MyClass2(1)) # => 2
 ```
 
-The translation of OOP dot methods is maybe the most direct one in our article. This is because all OOP languages do the same thing as Julia under the hood.
+The translation of OOP dot methods is maybe the most direct translation in this article. This is because all OOP languages do the same thing as Julia under the hood.
 
-If we DO want to support dot methods in Julia, just setup the same mechanism used by Python or other OO languages that support bound methods (examples: C\#, Python; counter examples: Java, JavaScript).
+If we DO want to support dot methods in Julia, just setup the same mechanism used by Python or any other OO language that support bound methods (examples: C\#, Python; counter examples: Java, JavaScript).
 
 
 ```julia
@@ -164,11 +163,13 @@ Base.getproperty(self::MyClass2, name::Symbol) =
     else
         Base.getfield(self, name)
     end
+
+MyClass2(1).double() # 2
 ```
 
-Supporting dot methods in Julia is NOT RECOMMANDED due to the poor IDE support and the convention "dot operators access fields".
+Supporting dot methods in Julia is NOT RECOMMANDED due to the poor IDE support and other conventions like "dot operators access fields".
 
-Strongly coupling methods with classes is proved not a general solution. A real-world instance is operator overloading, where Julia's multiple dispatch is the-state-of-the-art solution to the problem. The infrastructure part of deep learning frameworks requires facilities similar to multiple dispatch, where an evidence can be found from [this discussion](https://news.ycombinator.com/item?id=29354474).
+Besides, strongly coupling methods with classes is proved not a general solution. A real-world instance is operator overloading, where Julia's multiple dispatch is the-state-of-the-art solution to the problem. The infrastructure part of deep learning frameworks requires facilities similar to multiple dispatch, where an evidence can be found from [this discussion](https://news.ycombinator.com/item?id=29354474).
 
 You probably don't know the an interesting facts: dot methods are not really a component of OOP, it's just a historical idiom of many OOP languages.
 
