@@ -2,7 +2,7 @@
 
 Multiple dispatch used by Julia gives a novel solution to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem), while the so-called object-oriented programming has a different answer that is much more popular.
 
-Although we'd admit that there are some essential differences between OOP and multiple dispatch under the hood, they are not that different. In fact, Julia's multiple dispatch definitely steps further and can fully express OOP, although certain translation (very rare) is so far never efficient.
+Although we'd admit that there are some essential differences between OOP and multiple dispatch under the hood, they are not that different. In fact, Julia's multiple dispatch definitely steps further and can fully express OOP, although certain translation (very rare) is so far never efficient (I mean, fast in execution time).
 
 This article aims at telling people how to translate serious OOP code into idiomatic Julia. The translation is divided into the following sections:
 
