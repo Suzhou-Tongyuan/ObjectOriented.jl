@@ -8,7 +8,7 @@ module structdef
     using MLStyle: @match
     import InteractiveUtils
 
-    function not_code_coverage_and_goto(e)
+    function not_code_coverage_or_goto(e)
         @match e begin
             Expr(:code_coverage_effect, _...) => false
             ::Core.GotoNode => false
@@ -231,11 +231,11 @@ module structdef
             # │    └──      return %2
             # └    ) => Int64
             @test c.second === Int
-            @test @match filter(not_code_coverage, c.first.code)[2] begin
+            @test @match filter(not_code_coverage_or_goto, c.first.code)[2] begin
                 Expr(:call, f, _...) && if f == GlobalRef(Base, :arrayref) end => true
                 _ => false
             end
-            @test length(filter(not_code_coverage, c.first.code)) == 3
+            @test length(filter(not_code_coverage_or_goto, c.first.code)) == 3
         end
     end
 
