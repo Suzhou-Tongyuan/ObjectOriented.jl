@@ -1,2 +1,284 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>- · TyOOP.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://Suzhou-Tongyuan.github.io/TyOOP.jl/how-to-translate-oop-into-julia/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">TyOOP.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../cheat-sheet-en/">Cheat Sheet</a></li><li><a class="tocitem" href="../index-cn/">TyOOP</a></li><li><a class="tocitem" href="../cheat-sheet-cn/">-</a></li><li class="is-active"><a class="tocitem" href>-</a><ul class="internal"><li><a class="tocitem" href="#Translating-OOP-into-Idiomatic-Julia"><span>Translating OOP into Idiomatic Julia</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>-</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>-</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Suzhou-Tongyuan/TyOOP.jl/blob/main/docs/src/how-to-translate-oop-into-julia.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="Translating-OOP-into-Idiomatic-Julia"><a class="docs-heading-anchor" href="#Translating-OOP-into-Idiomatic-Julia">Translating OOP into Idiomatic Julia</a><a id="Translating-OOP-into-Idiomatic-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#Translating-OOP-into-Idiomatic-Julia" title="Permalink"></a></h2><p>Multiple dispatch used by Julia gives a novel solution to the <a href="https://en.wikipedia.org/wiki/Expression_problem">expression problem</a>, while the so-called object-oriented programming has a distinct but much more popular answer.</p><p>Although we&#39;d admit that there are some essential differences between OOP and multiple dispatch under the hood, they are not that different. In fact, Julia&#39;s multiple dispatch definitely steps further and can fully express OOP, although certain translation is so far never efficient.</p><p>This article aims at telling people how to translate serious OOP code into idiomatic Julia. The translation is divided into the following sections:</p><ul><li>Julian representation of classes and constructors</li><li>Julian representation of class methods</li><li>Julian representation of inheritances</li><li>Julian representation of multiple inheritances and method resolution</li><li>Julian representation of interfaces</li><li>Julian representation of traits</li></ul><p>After going through above details, we&#39;ll finally raise the point that Julia fully expresses OOP except</p><ol><li>an efficient implementation of modular dynamic dispatch</li><li>implicit upcasts</li><li>code constraints</li></ol><p>We are pragmatic. The disadvantages of multiple dispatch about IDE support will be also included.</p><p>(under construction)</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cheat-sheet-cn/">« -</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Wednesday 6 July 2022 10:03">Wednesday 6 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>- · TyOOP.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://Suzhou-Tongyuan.github.io/TyOOP.jl/how-to-translate-oop-into-julia/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">TyOOP.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../cheat-sheet-en/">Cheat Sheet</a></li><li><a class="tocitem" href="../index-cn/">TyOOP</a></li><li><a class="tocitem" href="../cheat-sheet-cn/">-</a></li><li class="is-active"><a class="tocitem" href>-</a><ul class="internal"><li><a class="tocitem" href="#Translating-OOP-into-Idiomatic-Julia"><span>Translating OOP into Idiomatic Julia</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>-</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>-</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Suzhou-Tongyuan/TyOOP.jl/blob/main/docs/src/how-to-translate-oop-into-julia.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="Translating-OOP-into-Idiomatic-Julia"><a class="docs-heading-anchor" href="#Translating-OOP-into-Idiomatic-Julia">Translating OOP into Idiomatic Julia</a><a id="Translating-OOP-into-Idiomatic-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#Translating-OOP-into-Idiomatic-Julia" title="Permalink"></a></h2><p>Multiple dispatch used by Julia gives a novel solution to the <a href="https://en.wikipedia.org/wiki/Expression_problem">expression problem</a>, while the so-called object-oriented programming has a different answer that is much more popular.</p><p>Although we&#39;d admit that there are some essential differences between OOP and multiple dispatch under the hood, they are not that different. In fact, Julia&#39;s multiple dispatch definitely steps further and can fully express OOP, although certain translation (very rare) is so far never efficient.</p><p>This article aims at telling people how to translate serious OOP code into idiomatic Julia. The translation is divided into the following sections:</p><ul><li>Julia representation of class constructors</li><li>Julia representation of class methods</li><li>Julia representation of inheritance</li><li>Julia representation of interfaces</li><li>The issue of translating OOP into Julia</li></ul><h3 id="Julia-representation-of-class-constructors"><a class="docs-heading-anchor" href="#Julia-representation-of-class-constructors">Julia representation of class constructors</a><a id="Julia-representation-of-class-constructors-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-representation-of-class-constructors" title="Permalink"></a></h3><p>In Python, we might simply write a class as follow.</p><pre><code class="language-python hljs">class MyClass:
+    def __init__(self, a):
+        self.a = a
+        self.b = a + a
+
+MyClass(1)</code></pre><p>Python encapsulates instantiation and the instance initialization into a single call <code>MyClass(1)</code>, but if we dig a little deeper, we will know that the construction of a Python object works like this:</p><pre><code class="language-python hljs">inst = MyClass.__new__(MyClass, 1)
+if isinstance(inst, MyClass):
+    MyClass.__init__(inst, 1)
+return inst</code></pre><p>We have found a fresh Julia user who comes from the OOP world can be anxious about the constructor. In Julia, a struct provides a default constructor which takes arguments in order of the class fields. This asks Julia users to create an instance (like <code>__new__()</code>) manually, but OOP guys would rather only create instance initialization function (like <code>__init__()</code>) themselves.</p><pre><code class="language-julia hljs">struct MyClass
+    a
+    b
+end
+
+b = a + a
+MyClass(a, b)</code></pre><p>However, achieving what OOP guys need is convenient and even mechanical. &quot;Convenient&quot; means Julia can do the same thing in a way less verbose than others, and &quot;mechanical&quot; means this is a general solution to the problem, and the problem is well-studied in the used mechanism.</p><p>We post the solution as follow. For readability, the code is simplified and the functionality is incomplete in corner cases.</p><p>The solution has 2 parts, the first one is the library code which is not very readable, but users are not responsible to implement by user; the second part is the user code, it is readable and concise, exactly like what in Python.</p><h4 id="lib_constructor"><a class="docs-heading-anchor" href="#lib_constructor">Library code</a><a id="lib_constructor-1"></a><a class="docs-heading-anchor-permalink" href="#lib_constructor" title="Permalink"></a></h4><pre><code class="language-julia hljs">## `new` and `init` can be overloaded for different classes
+@generated function default_constructor(::Type{Cls}) where Cls
+    Expr(:new, Cls)
+end
+
+function new(cls, args...; kwargs...)
+    # call default constructor without field initialization
+    return default_constructor(cls)
+end
+
+function init(self, args...; kwargs...)
+    nothing
+end
+
+abstract type OO end
+
+function (::Type{Cls})(args...; kwargs...) where Cls &lt;: OO
+    inst = new(Cls, args...; kwargs...)
+    if inst isa Cls
+        init(inst, args...; kwargs...)
+    end
+    return inst
+end</code></pre><h4 id="User-code"><a class="docs-heading-anchor" href="#User-code">User code</a><a id="User-code-1"></a><a class="docs-heading-anchor-permalink" href="#User-code" title="Permalink"></a></h4><pre><code class="language-julia hljs">mutable struct MyClass &lt;: OO
+    a
+    b
+end
+
+function init(self::MyClass, a)
+    self.a = a
+    self.b = a + a
+end
+
+MyClass(1)</code></pre><p>If we mark the functions <code>new</code>, <code>init</code> or <code>(::Type{Cls})</code> with <code>@inline</code>, the code becomes as efficient as in C/C++.</p><p>However, Julia does not adopt this solution. There are many reasons, but the key one is that Julia has native support for immutability. Mutable classes can be created without initializing fields, and get modified later, while immutable structs never support this. </p><pre><code class="language-julia hljs">struct Data
+    a :: Int
+end
+data = Data(1)
+data.a = 2
+
+ERROR: setfield!: immutable struct of type Data cannot be changed</code></pre><p>The old and popular approach to object construction works in the old world, but using it for a language providing new features (like immutability) is not deemed a good idea. The old solution can be provided as a library, but it discourages the use of the good features such as immutability.</p><p>TyOOP provides the <code>new</code> function and <code>@mk</code> macro to address above issue. Using <code>new</code> and <code>@mk</code>, your code is slightly more concise than in Python, and works for boths mutable structs and immutable structs.</p><h3 id="Julia-representation-of-class-methods"><a class="docs-heading-anchor" href="#Julia-representation-of-class-methods">Julia representation of class methods</a><a id="Julia-representation-of-class-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-representation-of-class-methods" title="Permalink"></a></h3><p>&quot;I need dot operators!&quot; This is what I am hearing about every day.</p><p>In Python, we can have such simple code:</p><pre><code class="language-python hljs">class MyClass2:
+    def __init__(self, x):
+        self.x = x
+
+    def double(self):
+        return self.x * 2
+
+MyClass2(1).double() # =&gt; 2</code></pre><p>In Julia, field accessing is using dot operators, while method accessing is not related to instances or even types. Methods are defined juxtaposing the structs.</p><pre><code class="language-julia hljs">struct MyClass2
+    a :: Int
+end
+
+double(self) = self.a * 2
+
+double(MyClass2(1)) # =&gt; 2</code></pre><p>The translation of OOP dot methods is maybe the most direct one in our article. This is because all OOP languages do the same thing as Julia under the hood.</p><p>If we DO want to support dot methods in Julia, just setup the same mechanism used by Python or other OO languages that support bound methods (examples: C#, Python; counter examples: Java, JavaScript).</p><pre><code class="language-julia hljs">struct BoundMethod{Func, Self}
+    func :: Func
+    self :: Self
+end
+
+function (boundmethod::BoundMethod{Func, Self})(args...; kwargs...) where {Func, Self}
+    boundmethod.func(boundmethod.self, args...; kwargs...)
+end
+
+Base.getproperty(self::MyClass2, name::Symbol) =
+    if name === :double
+        BoundMethod(double, self)
+    else
+        Base.getfield(self, name)
+    end</code></pre><p>Supporting dot methods in Julia is NOT RECOMMANDED due to the poor IDE support and the convention &quot;dot operators access fields&quot;.</p><p>Strongly coupling methods with classes is proved not a general solution. A real-world instance is operator overloading, where Julia&#39;s multiple dispatch is the-state-of-the-art solution to the problem. The infrastructure part of deep learning frameworks requires facilities similar to multiple dispatch, where an evidence can be found from <a href="https://news.ycombinator.com/item?id=29354474">this discussion</a>.</p><p>You probably don&#39;t know the an interesting facts: dot methods are not really a component of OOP, it&#39;s just a historical idiom of many OOP languages.</p><p>An explanation about the dot methods from programming languages is so-called runtime single dispatch. I&#39;ve recently found that the popularity of runtime single dispatching has led to a general inability of identifying problems or requirements that are essentially multiple-dispatched, which can be observed when you check out user API functions defined in Julia library made by programmers from classic OOP languages.</p><h3 id="Julia-representation-of-inheritance"><a class="docs-heading-anchor" href="#Julia-representation-of-inheritance">Julia representation of inheritance</a><a id="Julia-representation-of-inheritance-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-representation-of-inheritance" title="Permalink"></a></h3><p>Many smart programmers from the OOP world have already found the techniques described above, but it seems that many of them give up in handling inheritance.</p><p>However, a general solution to inheritance in Julia is still easy until we need syntax sugar support.</p><p>In Python, a class can inherit from other classes, and the child class can access the parents&#39; fields and methods, or override some methods. We give the following example:</p><pre><code class="language-python hljs">class A:
+    def __init__(self):
+        self.x = 1
+
+class B:
+    def __init__(self, *args):
+        self.args = args
+
+    def print_args(self):
+        print(self.args)
+
+class AB(A, B):
+    def __init__(self, *args):
+        A.__init__(self)
+        B.__init__(self, *args)
+
+ab = AB(1, 2, 3)
+ab.x # 1
+ab.print_args() # (1, 2, 3)</code></pre><p>To implement inheritance, we need basic understanding of what it is.</p><p>Inheritance in different OO languages have different underlying implementations. Many statically typed languages such as C++/Java/C# implements inheritance with composation, where a class instance implicitly holds base class instances (<code>sizeof</code> can be 0) as fields. However, dynamic languages such as Python provides the inheritance similar to mixin, base classes is (usually) only related to method reuse, while the data is is created by the derived class&#39;s <code>__new__</code> so that instances (usually) do not hold the base class instances. </p><p>The major difference of these two implementations in the userland is the ability to have more than one same-name fields in base classes and derived classes. Composation-based inheritance allows more than one same-name fields from different classes, but mixin-like inheritance implies the same name always references the the same member.</p><p>Effient encoding of inheritance in Julia needs composation. This is because the mixin-like inheritance shares the same data (and its memory layout) for all base classes, then the instance have to be something like a dictionary, which is not preferred.</p><p>The core idea of composation-based inheritance is very simple. Suppose our class inherits a base class <code>BaseCls</code>, which has a field <code>base_field</code>. As the base class instance is stored in a field, accessing <code>base_field</code> is no more than firstly access the base instance and use it to access the <code>base_field</code> normally.</p><p>Hence, the aforementioned Python code can be translated into:</p><pre><code class="language-julia hljs">mutable struct A &lt;: OO
+    x :: Int
+end
+
+function init(self::A) 
+    self.x = 1
+end
+
+mutable struct B &lt;: OO
+    args
+end
+
+function init(self::B, args...)
+    self.args = args
+end
+
+print_args(b) = println(b.args)
+
+mutable struct AB &lt;: OO
+    _base_a :: A
+    _base_b :: B
+end
+
+function init(self::AB, args...)
+    self._base_a = A()   # A.__init__(self)
+    self._base_b = B(args...) # B.__init__(self, args...)
+end
+
+Base.getproperty(self::AB, name::Symbol) =
+    if name === :x
+        self._base_a.x
+    elseif name === :args
+        self._base_b.args
+    else
+        Base.getfield(self, name)
+    end
+
+ab = AB(1, 2, 3)
+ab.x # 1
+print_args(ab) # (1, 2, 3)</code></pre><p>Note that methods applicable to base classes (e.g., <code>print_args</code>) also work for derived classes.</p><p>However, the issues is that users have to manually create <code>Base.getproperty</code>, which is definitely not acceptable. Fortunately, the above code does suggest a general and efficient solution: when defining a class, we statically resolve which field name is referencing which field from which class (e.g., the first base class), and finally generate a <code>Base.getproperty</code> (and <code>Base.setproperty!</code>).</p><p>Julia allows this with runtime code generation (staging), providing us a zero-cost implementation.</p><p>Think that we use a special struct <code>Inherit{T}</code> to distinguish fields storing base instances from other fields.</p><pre><code class="language-julia hljs">struct Inherit{Cls}
+    base_inst :: Cls
+end
+
+mutable struct BaseCls &lt;: OO
+    base_field :: Int
+end
+
+mutable struct DerivedCls &lt;: OO
+    _base :: Inherit{BaseCls}
+end</code></pre><p>In the following subsection, given <code>x::DerivedCls</code>, we make <code>x.base_field</code> retrieves <code>x._base.base_inst.base_field</code>.</p><h4 id="[Library-code](@ref-lib_inheritance)"><a class="docs-heading-anchor" href="#[Library-code](@ref-lib_inheritance)"><a href="@ref lib_inheritance">Library code</a></a><a id="[Library-code](@ref-lib_inheritance)-1"></a><a class="docs-heading-anchor-permalink" href="#[Library-code](@ref-lib_inheritance)" title="Permalink"></a></h4><p>There is no need to fully understand the details, and the code is provided for copy-paste.</p><pre><code class="language-julia hljs">struct Inherit{Cls}
+    base_inst :: Cls
+end
+
+Base.@pure function _pathed_fieldnames(@nospecialize(t))
+    t &lt;: OO || error(&quot;Not an OO type&quot;)
+    fts = fieldtypes(t)
+    fns = fieldnames(t)
+    pathed_names = Tuple{Tuple, Symbol}[]
+    for i in eachindex(fns, fts)
+        ft = fts[i]
+        if ft &lt;: Inherit &amp;&amp; ft isa DataType # concrete
+            base_t = ft.parameters[1]
+            for (path, n) in _pathed_fieldnames(base_t)
+                if !startswith(string(n), &quot;_&quot;)
+                    push!(
+                        pathed_names,
+                        ((i, 1, path...), n))
+                end
+            end
+        else
+            # make &#39;_xxx&#39; private
+            push!(pathed_names, ((i, ), fns[i]))
+        end
+    end
+    Tuple(pathed_names)
+end
+
+Base.@pure function _fieldnames(@nospecialize(t))
+    Tuple(unique!([x[2] for x in _pathed_fieldnames(t)]))
+end
+
+@inline @generated function unroll_select(f, orelse, ::Val{tuple}, x, args...) where tuple
+    expr = Expr(:block)
+    foldr(tuple, init=:(return orelse(x))) do l, r
+        Expr(:if,
+            :(x === $(QuoteNode(l))),
+            :(return f($(Val(l)), args...)), r)
+    end
+end
+
+
+@inline @generated function _getproperty(self::T, ::Val{fieldname}) where {T &lt;: OO, fieldname}
+    pathed_names = _pathed_fieldnames(T)
+    for (path, name) in pathed_names
+        if name === fieldname
+            return foldl(path, init=:self) do l, r
+                :($getfield($l, $r))
+            end
+        end
+    end
+    return :($error(&quot;type &quot; * string(T) * &quot; has no field &quot; * string(fieldname)))
+end
+
+function _do_with_field_found(typed_name::Val, self)
+    _getproperty(self, typed_name)
+end
+
+@inline function Base.getproperty(self::T, name::Symbol) where T &lt;: OO
+    function _do_with_field_unfound(name::Symbol)
+        error(&quot;type $(string(T)) has no field $(string(unknown_name))&quot;)
+    end
+    unroll_select(
+        _do_with_field_found,
+        _do_with_field_unfound,
+        Val(_fieldnames(T)),
+        name,
+        self,
+    )     
+end</code></pre><h4 id="User-code-2"><a class="docs-heading-anchor" href="#User-code-2">User code</a><a class="docs-heading-anchor-permalink" href="#User-code-2" title="Permalink"></a></h4><pre><code class="language-julia hljs">mutable struct A &lt;: OO
+    x :: Int
+end
+
+function init(self::A) 
+    self.x = 1
+end
+
+mutable struct B &lt;: OO
+    args
+end
+
+function init(self::B, args...)
+    self.args = args
+end
+
+print_args(b) = println(b.args)
+
+mutable struct AB &lt;: OO
+    _base_a :: Inherit{A}
+    _base_b :: Inherit{B}
+end
+
+function init(self::AB, args...)
+    self._base_a = Inherit(A())   # A.__init__(self)
+    self._base_b = Inherit(B(args...)) # B.__init__(self, args...)
+end
+
+
+ab = AB(1, 2, 3)
+ab.x # 1
+print_args(ab) # (1, 2, 3)</code></pre><h3 id="Julia-representation-of-interfaces"><a class="docs-heading-anchor" href="#Julia-representation-of-interfaces">Julia representation of interfaces</a><a id="Julia-representation-of-interfaces-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-representation-of-interfaces" title="Permalink"></a></h3><p>OOP uses interfaces to specify valid behaviours of a open family of classes. It helps the following programming requirements:</p><ol><li>hiding implementation details about concrete classes</li><li>reusing the functions for multiple classes</li><li>specifying contraints of input and output</li></ol><p>Recently, many OO languages start support default method implementations in interfaces, so interfaces are now not that different from multi-inheritable, zero-field abstract classes.</p><p>Interfaces in Python is very standard, but it works under the help of Python&#39;s mature IDEs.</p><p>Here is an example of using interfaces in Python:</p><pre><code class="language-python hljs">class MyInterface:
+    def abs_func(self, arg):
+        raise NotImplementedError
+
+    def mixin_func(self, arg):
+        return &quot;mixin &quot; + self.abs_func(arg)
+
+class Cls1(MyInterface):
+    def abs_func(self, arg):
+        return &quot;cls1&quot;
+
+class Cls2(MyInterface):
+    def abs_func(self, arg):
+        return &quot;cls2&quot;
+
+# Use interfaces!
+def func_reusing_for_multi_classes(self: MyInterface, arg):
+    return self.mixin_func(arg)
+
+func_reusing_for_multi_classes(Cls2(), &quot;xxx&quot;) # &quot;mixin cls2&quot;</code></pre><p>Such code can be translated in Julia using <code>abstract type</code>:</p><pre><code class="language-julia hljs">abstract type MyInterface end
+abs_func(self::MyInterface, arg) =
+    error(&quot;&#39;abs_func&#39; is not defined for $(typeof(self)).&quot;)
+
+mixin_func(self::MyInterface, arg) =
+    &quot;mixin &quot; * abs_func(self, arg)
+
+struct Cls1 &lt;: MyInterface end
+struct Cls2 &lt;: MyInterface end
+
+abs_func(self::Cls1, arg) = &quot;cls1&quot;
+abs_func(self::Cls2, arg) = &quot;cls2&quot;
+
+# Use interfaces!
+func_reusing_for_multi_classes(self::MyInterface, arg) =
+    mixin_func(self, arg)
+
+func_reusing_for_multi_classes(Cls2(), &quot;xxx&quot;) # &quot;mixin cls2&quot;</code></pre><p>As can been above, the code in Julia is slightly more concise than that in Python.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cheat-sheet-cn/">« -</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Thursday 7 July 2022 09:56">Thursday 7 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
