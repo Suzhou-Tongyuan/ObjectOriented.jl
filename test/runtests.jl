@@ -10,6 +10,7 @@ module structdef
 
     function not_code_coverage_or_goto(e)
         @match e begin
+            Expr(:meta, _...) => false
             Expr(:code_coverage_effect, _...) => false
             ::Core.GotoNode => false
             _ => true
