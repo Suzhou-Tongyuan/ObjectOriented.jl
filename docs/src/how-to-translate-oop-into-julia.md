@@ -1,4 +1,4 @@
-## Translating OOP into Idiomatic Julia
+# Translating OOP into Idiomatic Julia
 
 Multiple dispatch used by Julia gives a novel solution to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem), while the so-called object-oriented programming has a different answer that is much more popular.
 
@@ -11,7 +11,7 @@ This article aims at telling people how to translate serious OOP code into idiom
 - Julia representation of inheritance
 - Julia representation of interfaces
 
-### Julia representation of constructors
+## Julia representation of constructors
 
 In Python, we might simply write a class as follow.
 
@@ -51,7 +51,7 @@ We post the solution as follow. For readability, the code is simplified and the 
 
 The solution has 2 parts, the first one is the library code which is not very readable, but it is not responsible for users to implement; the second part is the user code, it is readable and concise, exactly like what in Python.
 
-#### [Library code](@id lib_constructor)
+### [Library code](@id lib_constructor)
 
 ```julia
 ## `new` and `init` can be overloaded for different classes
@@ -79,7 +79,7 @@ function (::Type{Cls})(args...; kwargs...) where Cls <: OO
 end
 ```
 
-#### User code
+### User code
 
 ```julia
 mutable struct MyClass <: OO
@@ -113,7 +113,7 @@ The old and popular approach to object construction, like Python's `__init__`, w
 
 TyOOP provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for both mutable structs and immutable structs.
 
-### Julia representation of methods
+## Julia representation of methods
 
 In Python, we can define methods for a class so that its instance can call the method with `instance.method()`.
 
@@ -173,7 +173,7 @@ You probably don't know an interesting fact: dot methods are not really a compon
 
 From the perspective of programming languages, dot methods are so-called runtime single dispatch, and I've recently found that the popularity of runtime single dispatch has led to a general inability of identifying problems or requirements that are essentially multiple-dispatched. Such fact can be usually observed from the user API functions made by programmers from classic OOP languages.
 
-### Julia representation of inheritance
+## Julia representation of inheritance
 
 Many smart programmers from the OOP world have already found the technique described above, but it seems that many of them give up in handling inheritance.
 
@@ -282,7 +282,7 @@ end
 
 In the following subsection, given `x::DerivedCls`, we make `x.base_field` retrieves `x._base.base_inst.base_field`.
 
-#### [Library code](@ref lib_inheritance)
+### [Library code](@ref lib_inheritance)
 
 There is no need to fully understand the details, and the code is provided for copy-paste.
 
@@ -359,7 +359,7 @@ end
 end
 ```
 
-#### User code
+### User code
 
 Using the library code above, we can avoid manual implementation of `Base.getproperty`.
 
@@ -398,7 +398,7 @@ ab.x # 1
 print_args(ab) # (1, 2, 3)
 ```
 
-### Julia representation of interfaces
+## Julia representation of interfaces
 
 OOP uses interfaces to specify valid behaviours of an open family of classes. It helps the following programming requirements:
 
@@ -460,7 +460,7 @@ func_reusing_for_multi_classes(Cls2(), "xxx") # "mixin cls2"
 
 As can be seen above, the code in Julia is slightly more concise than that in Python.
 
-### Conclusions
+## Conclusions
 
 OOP features, such as constructors, methods, inheritance, and interfaces, have corresponding translation in Julia.
 

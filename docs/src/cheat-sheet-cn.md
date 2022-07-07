@@ -1,9 +1,9 @@
-## TyOOP Cheat Sheet
+# TyOOP Cheat Sheet
 
 TyOOP为Julia提供面向对象编程的功能，支持多继承、点操作符取成员、Python风格的properties以及接口编程。
 
 
-### 1. 类型定义
+## 1. 类型定义
 
 
 定义不可变的OO结构体。
@@ -48,7 +48,7 @@ mt = MutableData(1, 2)
 mt.x += 1
 ```
 
-#### 默认字段
+## 默认字段
 
 TyOOP支持默认字段。
 
@@ -88,7 +88,7 @@ MyType(MyType, 50)
 3. 与`Base.@kwdef`不同，默认字段的求值表达式无法访问其他字段。
 
 
-### 2. 继承
+## 2. 继承
 
 ```julia
 @oodef mutable struct Animal
@@ -139,7 +139,7 @@ isinstance(Snake("xxx"), Animal) # true
 Snake("xxx") isa @like(Animal) # true
 ```
 
-### 4. Python-style properties
+## 4. Python-style properties
 
 ```julia
 @oodef mutable struct Square
@@ -161,7 +161,7 @@ square.area = 25
 square.side # 5.0
 ```
 
-### 5. 接口
+## 5. 接口
 
 接口类型，是大小为0(`sizeof(t) == 0`)的**不可变**OO类型。
 
@@ -242,7 +242,7 @@ vec
 此外，接口最重要的目的是基于接口的多态抽象。见下文[基于接口的多态抽象](@ref interface_polymorphism_cn)。
 
 
-### 6. 多继承
+## 6. 多继承
 
 MRO(方法解析顺序)使用Python C3算法，所以多继承行为与Python基本一样。主要差异是不严格要求mixin多继承的顺序。
 
@@ -286,7 +286,7 @@ d.call() # C
 #  A
 ```
 
-### 7. [基于接口的多态抽象](@id interface_polymorphism)
+## 7. [基于接口的多态抽象](@id interface_polymorphism)
 
 
 下面例子给出一个容易犯错的情况：
@@ -318,7 +318,7 @@ myapi([])
 ```
 
 
-### 8. 一个机器学习的OOP实例
+## 8. 一个机器学习的OOP实例
 
 在下面这份代码里，我们实现一个使用最小二乘法训练的机器学习模型，并让其支持Julia中ScikitLearn的接口 (ScikitLearnBase.jl)。通过下面代码，用户可以像使用一般ScikitLearn.jl的模型一样来调用这个模型，更可以在MLJ机器学习框架中使用这个模型，而不必关心该模型由面向对象还是多重分派实现。
 
@@ -382,7 +382,7 @@ ScikitLearnBase.fit!(clf, xdata, ydata)
 ScikitLearnBase.predict(clf, xdata)
 ```
 
-### 9. 性能问题
+## 9. 性能问题
 
 TyOOP生成的代码本身不引入开销，但由于递归调用点操作符运算 (`Base.getproperty(...)`) 的类型推断问题 (例如[这个例子](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm))，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
 
