@@ -17,7 +17,12 @@ The supported features:
 - generics for the OOP system
 - interfaces
 
-Check out [documentations](https://Suzhou-Tongyuan.github.io/TyOOP.jl/dev/).
+Check out our [documentation](https://Suzhou-Tongyuan.github.io/TyOOP.jl/dev/).
+
+We recommend you to read [How to Translate OOP into Idiomatic Julia](https://suzhou-tongyuan.github.io/TyOOP.jl/dev/how-to-translate-oop-into-julia) before using this package. If you understand your complaints about Julia's lack of OOP come from your refutation of the Julia coding style, feel free to use this.
+
+For people who want to use this package in a more Julian way, you can avoid defining methods (and Python-style properties) with `@oodef`.
+
 ## Preview
 
 ```julia
