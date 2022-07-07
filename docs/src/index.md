@@ -324,7 +324,7 @@ square.side # => 4.0
 
 As can be seen, the side length of the square changes accordingly as the area gets changed.
 
-## [Advanced feature：Abstract methods, and abstract properties](@id advanced_absmeths_and_absprops)
+## [Advanced feature: Abstract methods, and abstract properties](@id advanced_absmeths_and_absprops)
 
 ```julia
 @oodef struct AbstractSizedContainer{ElementType}
