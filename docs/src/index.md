@@ -25,7 +25,7 @@ The feature list is given below:
 
 Quick start through [TyOOP Cheat Sheet](./cheat-sheet-en.md).
 
-Note that we support the community idea "do not do OOP in Julia".
+Note that we very much support the community idea "do not do OOP in Julia".
 
 We make this guide **[Translating OOP into Idiomatic Julia](./how-to-translate-oop-into-julia.md)** to instruct users on how to translate OOP code into Julia, promising more concise, more extensible and more efficient code.
 

@@ -24,7 +24,7 @@ CurrentModule = TyOOP
 
 快速学习请参考[TyOOP Cheat Sheet](./cheat-sheet-cn.md).
 
-必须强调的是，我们认可社区关于“不要在Julia中做OOP”的观点。
+必须强调的是，我们非常认可Julia社区关于“不要在Julia中做OOP”的观点。
 
 我们创建这个指南 **[将OOP翻译到地道的Julia]((./how-to-translate-oop-into-julia.md))**，以指导用户如何将OOP代码翻译为更简短、更高效的Julia代码。
 
