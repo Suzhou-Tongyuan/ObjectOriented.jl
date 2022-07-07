@@ -17,9 +17,9 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Cheat Sheet" => "cheat-sheet-en.md",
-        "index-cn.md",
-        "cheat-sheet-cn.md",
-        "how-to-translate-oop-into-julia.md"
+        # "index-cn.md",
+        # "cheat-sheet-cn.md",
+        "Translating OOP into Idiomatic Julia" => "how-to-translate-oop-into-julia.md"
     ],
 )
 
