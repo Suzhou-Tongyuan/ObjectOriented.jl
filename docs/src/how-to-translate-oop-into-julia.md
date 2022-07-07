@@ -207,7 +207,7 @@ To implement inheritance, we need basic understanding of what it is.
 
 Inheritance in different OOP languages have different underlying implementations. Many statically typed languages such as C++/Java/C\# implement inheritance with composition, where a class instance implicitly holds base class instances (`sizeof` can be 0) as fields. However, dynamic languages such as Python provides the inheritance similar to "mixin", where base classes are (usually) only related to reusing methods, and the instance is created only by the derived class's `__new__` so that instances (usually) do not hold the base class instances. 
 
-The major difference of these two implementations in the userland, other than performance, is the capability to have more than one same-name fields in different base classes or the derived class. Composition-based inheritance allows more than one same-name fields from different classes, but mixin-like inheritance implies the same name always references the the same member.
+The major difference between these two implementations in the userland, other than performance, is the capability to have more than one same-name fields in different base classes or the derived class. Composition-based inheritance allows more than one same-name fields from different classes, but mixin-like inheritance implies the same name always references the the same member.
 
 Effient encoding of inheritance in Julia needs composition. This is because the mixin-like inheritance shares the same data (and its memory layout) for all base classes, then the instance have to be something like a dictionary, which is not preferred.
 
