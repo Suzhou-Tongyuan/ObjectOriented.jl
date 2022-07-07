@@ -6,12 +6,12 @@ Although we'd admit that there are some essential differences between OOP and mu
 
 This article aims at telling people how to translate serious OOP code into idiomatic Julia. The translation is divided into the following sections:
 
-- Julia representation of class constructors
-- Julia representation of class methods
+- Julia representation of constructors
+- Julia representation of methods
 - Julia representation of inheritance
 - Julia representation of interfaces
 
-### Julia representation of class constructors
+### Julia representation of constructors
 
 In Python, we might simply write a class as follow.
 
@@ -111,13 +111,11 @@ ERROR: setfield!: immutable struct of type Data cannot be changed
 
 The old and popular approach to object construction, like Python's `__init__`, works in the old world, but using it for a language providing new features (like immutability) is not deemed a good idea. The old solution can be provided as a library, but it discourages the use of the good features such as immutability.
 
-TyOOP provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for boths mutable structs and immutable structs.
+TyOOP provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for both mutable structs and immutable structs.
 
-### Julia representation of class methods
+### Julia representation of methods
 
-"I need dot operators!" This is recently what I am hearing about every day.
-
-In Python, we can have such simple code:
+In Python, we can define methods for a class so that its instance can call the method with `instance.method()`.
 
 ```python
 class MyClass2:
@@ -142,9 +140,9 @@ double(self) = self.a * 2
 double(MyClass2(1)) # => 2
 ```
 
-The translation of OOP dot methods is maybe the most direct translation in this article. This is because all OOP languages do the same thing as Julia under the hood.
+The translation of dot methods is maybe the most direct translation in this article. This is because all OOP languages do the same thing as Julia under the hood.
 
-If we DO want to support dot methods in Julia, just setup the same mechanism used by Python or any other OO language that support bound methods (examples: C\#, Python; counter examples: Java, JavaScript).
+If we DO want to support dot methods in Julia, just setup the same mechanism used by Python or any other OOP language that support bound methods (examples: C\#, Python; counter examples: Java, JavaScript).
 
 
 ```julia
@@ -169,19 +167,19 @@ MyClass2(1).double() # 2
 
 Supporting dot methods in Julia is NOT RECOMMANDED due to the poor IDE support and other conventions like "dot operators access fields".
 
-Besides, strongly coupling methods with classes is proved not a general solution. A real-world instance is operator overloading, where Julia's multiple dispatch is the-state-of-the-art solution to the problem. The infrastructure part of deep learning frameworks requires facilities similar to multiple dispatch, where an evidence can be found from [this discussion](https://news.ycombinator.com/item?id=29354474).
+Besides, strongly coupling methods with classes is found not a general solution. A real-world counter example is operator overloading, where Julia's multiple dispatch is the-state-of-the-art solution to the problem. The infrastructure part of deep learning frameworks requires facilities similar to multiple dispatch, where an evidence can be found from [this discussion](https://news.ycombinator.com/item?id=29354474).
 
-You probably don't know the an interesting facts: dot methods are not really a component of OOP, it's just a historical idiom of many OOP languages.
+You probably don't know an interesting fact: dot methods are not really a component of OOP, it's just a historical idiom of many OOP languages.
 
-An explanation about the dot methods from programming languages is so-called runtime single dispatch. I've recently found that the popularity of runtime single dispatching has led to a general inability of identifying problems or requirements that are essentially multiple-dispatched, which can be observed when you check out user API functions defined in Julia library made by programmers from classic OOP languages.
+From the perspective of programming languages, dot methods are so-called runtime single dispatch, and I've recently found that the popularity of runtime single dispatch has led to a general inability of identifying problems or requirements that are essentially multiple-dispatched. Such fact can be usually observed from the user API functions made by programmers from classic OOP languages.
 
 ### Julia representation of inheritance
 
-Many smart programmers from the OOP world have already found the techniques described above, but it seems that many of them give up in handling inheritance.
+Many smart programmers from the OOP world have already found the technique described above, but it seems that many of them give up in handling inheritance.
 
 However, a general solution to inheritance in Julia is still easy until we need syntax sugar support.
 
-In Python, a class can inherit from other classes, and the child class can access the parents' fields and methods, or override some methods. We give the following example:
+In Python, a class can inherit from other classes, and the child class can access the parents' fields and methods, or override some of the methods. We give the following example:
 
 ```python
 class A:
@@ -207,13 +205,13 @@ ab.print_args() # (1, 2, 3)
 
 To implement inheritance, we need basic understanding of what it is.
 
-Inheritance in different OO languages have different underlying implementations. Many statically typed languages such as C++/Java/C\# implements inheritance with composation, where a class instance implicitly holds base class instances (`sizeof` can be 0) as fields. However, dynamic languages such as Python provides the inheritance similar to mixin, base classes is (usually) only related to method reuse, while the data is is created by the derived class's `__new__` so that instances (usually) do not hold the base class instances. 
+Inheritance in different OOP languages have different underlying implementations. Many statically typed languages such as C++/Java/C\# implement inheritance with composition, where a class instance implicitly holds base class instances (`sizeof` can be 0) as fields. However, dynamic languages such as Python provides the inheritance similar to "mixin", where base classes are (usually) only related to reusing methods, and the instance is created only by the derived class's `__new__` so that instances (usually) do not hold the base class instances. 
 
-The major difference of these two implementations in the userland is the ability to have more than one same-name fields in base classes and derived classes. Composation-based inheritance allows more than one same-name fields from different classes, but mixin-like inheritance implies the same name always references the the same member.
+The major difference of these two implementations in the userland, other than performance, is the capability to have more than one same-name fields in different base classes or the derived class. Composition-based inheritance allows more than one same-name fields from different classes, but mixin-like inheritance implies the same name always references the the same member.
 
-Effient encoding of inheritance in Julia needs composation. This is because the mixin-like inheritance shares the same data (and its memory layout) for all base classes, then the instance have to be something like a dictionary, which is not preferred.
+Effient encoding of inheritance in Julia needs composition. This is because the mixin-like inheritance shares the same data (and its memory layout) for all base classes, then the instance have to be something like a dictionary, which is not preferred.
 
-The core idea of composation-based inheritance is very simple. Suppose our class inherits a base class `BaseCls`, which has a field `base_field`. As the base class instance is stored in a field, accessing `base_field` is no more than firstly access the base instance and use it to access the `base_field` normally.
+The core idea of composition-based inheritance is very simple. Suppose our class inherits a base class `BaseCls`, which has a field `base_field`. As the base class instance is stored in a field of the derived class instance, accessing `base_field` is no more than firstly access the base class instance and use it to access the `base_field` normally.
 
 Hence, the aforementioned Python code can be translated into:
 
@@ -262,11 +260,11 @@ print_args(ab) # (1, 2, 3)
 
 Note that methods applicable to base classes (e.g., `print_args`) also work for derived classes.
 
-However, the issues is that users have to manually create `Base.getproperty`, which is definitely not acceptable. Fortunately, the above code does suggest a general and efficient solution: when defining a class, we statically resolve which field name is referencing which field from which class (e.g., the first base class), and finally generate a `Base.getproperty` (and `Base.setproperty!`).
+However, the issues is that users have to manually create `Base.getproperty`, which is definitely not acceptable. Fortunately, the above code does suggest a general and efficient solution: when defining a class, we statically resolve which field name is referencing which field from which class, and finally generate a `Base.getproperty` (and `Base.setproperty!`).
 
 Julia allows this with runtime code generation (staging), providing us a zero-cost implementation.
 
-Think that we use a special struct `Inherit{T}` to distinguish fields storing base instances from other fields.
+Think that we use a special struct `Inherit{T}` to distinguish normal fields from the fields that store base class instances.
 
 ```julia
 struct Inherit{Cls}
@@ -363,6 +361,8 @@ end
 
 #### User code
 
+Using the library code above, we can avoid manual implementation of `Base.getproperty`.
+
 ```julia
 mutable struct A <: OO
     x :: Int
@@ -400,15 +400,15 @@ print_args(ab) # (1, 2, 3)
 
 ### Julia representation of interfaces
 
-OOP uses interfaces to specify valid behaviours of a open family of classes. It helps the following programming requirements:
+OOP uses interfaces to specify valid behaviours of an open family of classes. It helps the following programming requirements:
 
 1. hiding implementation details about concrete classes
 2. reusing the functions for multiple classes
-3. specifying contraints of input and output
+3. specifying constraints of input and output
 
-Recently, many OO languages start support default method implementations in interfaces, so interfaces are now not that different from multi-inheritable, zero-field abstract classes.
+Recently, many OOP languages get started supporting default method implementations for interfaces, so interfaces are now not that different from multi-inheritable, zero-field abstract classes.
 
-Interfaces in Python is very standard, but it works under the help of Python's mature IDEs.
+Interfaces in Python is not very standard, but it does work under the help of Python's mature IDEs.
 
 Here is an example of using interfaces in Python:
 
@@ -435,7 +435,7 @@ def func_reusing_for_multi_classes(self: MyInterface, arg):
 func_reusing_for_multi_classes(Cls2(), "xxx") # "mixin cls2"
 ```
 
-Such code can be translated in Julia using `abstract type`:
+Such code can be translated into Julia using `abstract type`:
 
 ```julia
 abstract type MyInterface end
@@ -458,5 +458,20 @@ func_reusing_for_multi_classes(self::MyInterface, arg) =
 func_reusing_for_multi_classes(Cls2(), "xxx") # "mixin cls2"
 ```
 
-As can been above, the code in Julia is slightly more concise than that in Python.
+As can be seen above, the code in Julia is slightly more concise than that in Python.
 
+### Conclusions
+
+OOP features, such as constructors, methods, inheritance, and interfaces, have corresponding translation in Julia.
+
+For most of tasks involving OOP, the translation is straightforward and even more concise than the original code.
+
+However, we'd still admit such translation has limitations, while the limitation is never about missing language features.
+
+A notable limitation is about the performance of the runtime polymorphisms. OOP's polymorphism is vtable-based runtime polymorphism, which makes OOP code run pretty fast when handling a container of abstract typed elements. Julia performs worse in this case when you translate OOP code into Julia, to which there is no general solution.
+
+Another important limitation is about IDE support or code introspection. I'm always thinking that people are not really complaining about Julia's lack of OOP support, but the lack of dot operators, I mean, some language facility to organize and search definitions.
+
+For instance, if I know a class is iterable, I'd like to know the available methods (such as `iterate`) or fields by simply typing `something.<TAB>`. So far we have to browse the documentation, otherwise we cannot even find out the methods intentionally defined for some abstract type.
+
+(Possibly off-topic) I don't really want to be a boring guy who talks about how much better a FP language could be, but if possible we could learn about API organization from Erlang or Haskell. If operations for iterables are registered in a module `Iterables`, and `Iterables.<TAB>` shows `iterate` in the completion list for me, I'd be more satisfied.
