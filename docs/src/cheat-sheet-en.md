@@ -1,5 +1,7 @@
 # TyOOP cheat sheet
 
+[中文文档](./cheat-sheet-cn.md)
+
 TyOOP has provided relatively complete object-oriented programming support for Julia. It supports multiple inheritances, dot-operator access to members, Python-style properties and interface proramming.
 
 ## 1. Type definition
