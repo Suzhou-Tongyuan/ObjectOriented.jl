@@ -101,7 +101,7 @@ However, Julia does not adopt this solution. There are many reasons, but the key
 
 ```julia
 struct Data
-    a :: Int
+    a::Int
 end
 data = Data(1)
 data.a = 2
@@ -132,7 +132,7 @@ However, in Julia, field accessing is using dot operators, while method accessin
 
 ```julia
 struct MyClass2
-    a :: Int
+    a::Int
 end
 
 double(self) = self.a * 2
@@ -147,8 +147,8 @@ If we DO want to support dot methods in Julia, just setup the same mechanism use
 
 ```julia
 struct BoundMethod{Func, Self}
-    func :: Func
-    self :: Self
+    func::Func
+    self::Self
 end
 
 function (boundmethod::BoundMethod{Func, Self})(args...; kwargs...) where {Func, Self}
@@ -217,7 +217,7 @@ Hence, the aforementioned Python code can be translated into:
 
 ```julia
 mutable struct A <: OO
-    x :: Int
+    x::Int
 end
 
 function init(self::A) 
@@ -235,8 +235,8 @@ end
 print_args(b) = println(b.args)
 
 mutable struct AB <: OO
-    _base_a :: A
-    _base_b :: B
+    _base_a::A
+    _base_b::B
 end
 
 function init(self::AB, args...)
@@ -268,15 +268,15 @@ Think that we use a special struct `Inherit{T}` to distinguish normal fields fro
 
 ```julia
 struct Inherit{Cls}
-    base_inst :: Cls
+    base_inst::Cls
 end
 
 mutable struct BaseCls <: OO
-    base_field :: Int
+    base_field::Int
 end
 
 mutable struct DerivedCls <: OO
-    _base :: Inherit{BaseCls}
+    _base::Inherit{BaseCls}
 end
 ```
 
@@ -288,7 +288,7 @@ There is no need to fully understand the details, and the code is provided for c
 
 ```julia
 struct Inherit{Cls}
-    base_inst :: Cls
+    base_inst::Cls
 end
 
 Base.@pure function _pathed_fieldnames(@nospecialize(t))
@@ -365,7 +365,7 @@ Using the library code above, we can avoid manual implementation of `Base.getpro
 
 ```julia
 mutable struct A <: OO
-    x :: Int
+    x::Int
 end
 
 function init(self::A) 
@@ -383,8 +383,8 @@ end
 print_args(b) = println(b.args)
 
 mutable struct AB <: OO
-    _base_a :: Inherit{A}
-    _base_b :: Inherit{B}
+    _base_a::Inherit{A}
+    _base_b::Inherit{B}
 end
 
 function init(self::AB, args...)
