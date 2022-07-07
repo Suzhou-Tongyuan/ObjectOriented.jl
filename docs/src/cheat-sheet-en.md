@@ -82,7 +82,7 @@ Some points of the default field values:
 2. when a field has been explicitly initialized in the `@mk` block, the expression of the default field value won't be evaluated.
 3. unlike `Base.@kwdef`, default field values cannot reference each other.
 
-### 2. 继承
+### 2. Inheritance
 
 ```julia
 @oodef mutable struct Animal
@@ -238,11 +238,9 @@ vec
 In addition, the most important reason for interfaces is the interface-based polymorphism. See [Interface-based polymorphism](@ref interface_polymorphism_cn).
 
 
-### 6. 多继承
+### 6. Multiple inheritance
 
 MRO (Method resolution order) is using Python's C3 algorithm, so the behaviour is mostly identical to Python. The major difference is that the order of inheriting mixin classes is less strict.
-
-MRO(方法解析顺序)使用Python C3算法，所以多继承行为与Python一样。
 
 ```julia
 @oodef struct A
