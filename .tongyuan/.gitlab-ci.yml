@@ -3,18 +3,18 @@
 include:
   - 'http://172.16.1.35:6688/chenjiuning/julia-ci-template/raw/master/v1.shell.yml'
 
-UnitTest:1.5:
+UnitTest:1.6:
   variables:
-    julia_version: "1.5"
+    julia_version: "1.6"
   tags:
     - shell
   extends:
     - .julia
     - .test
 
-UnitTest:1.6:
+UnitTest:1.7:
   variables:
-    julia_version: "1.6"
+    julia_version: "1.7"
   tags:
     - shell
   extends:
