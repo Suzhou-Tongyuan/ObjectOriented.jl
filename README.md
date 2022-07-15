@@ -4,7 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://Suzhou-Tongyuan.github.io/ObjectOriented.jl/dev/)
 [![Build Status](https://github.com/Suzhou-Tongyuan/ObjectOriented.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Suzhou-Tongyuan/ObjectOriented.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-[ObjectOriented](https://github.com/thautwarm/ObjectOriented.jl) is a mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia.
+[ObjectOriented.jl](https://github.com/thautwarm/ObjectOriented.jl) is a mechanical OOP programming library for Julia. The design is mainly based on CPython OOP but adapted for Julia.
 
 
 The supported features:
