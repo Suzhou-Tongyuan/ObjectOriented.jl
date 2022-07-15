@@ -74,9 +74,9 @@ julia> inst.compute_a_plus_b()
 
 ## Hints For Professional Julia Programmers
 
-As the dot method (`self.method()`) is purely a syntactic sugar thing, using the idiomatic Julia code like `method(self)` is usually better.
+As the dot method (`self.method()`) is purely a syntactic sugar thing, using the idiomatic Julia code like `method(self)` is usually better. Using the idiomatic Julia methods, method ambiguity can be avoided, which is of course better than OOP in this case.
 
-You can just avoid defining dot methods:
+You can avoid defining dot methods as shown below:
 
 ```julia
 @oodef struct MyType
