@@ -3,8 +3,8 @@ function fix_path(base, t, path)
 end
 
 function cls_linearize(::Type{root}) where root
-    bases = TyOOP.ootype_bases(root)
-    chains = [[fix_path(base, t, path) for (t, path) in TyOOP.ootype_mro(base)] for base in bases]
+    bases = ObjectOriented.ootype_bases(root)
+    chains = [[fix_path(base, t, path) for (t, path) in ObjectOriented.ootype_mro(base)] for base in bases]
     resolved = linearize(Tuple{Type, Tuple}, chains) do l, r
         l[1] === r[1]
     end
@@ -13,7 +13,7 @@ function cls_linearize(::Type{root}) where root
 end
 
 function cls_linearize(bases::Vector)::Vector{Tuple{Type, Tuple}}
-    chains = [[fix_path(base, t, path) for (t, path) in TyOOP.ootype_mro(base)] for base in bases]
+    chains = [[fix_path(base, t, path) for (t, path) in ObjectOriented.ootype_mro(base)] for base in bases]
     linearize(Tuple{Type, Tuple}, chains) do l, r
         l[1] === r[1]
     end

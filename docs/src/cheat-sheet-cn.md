@@ -1,6 +1,6 @@
-# TyOOP Cheat Sheet
+# ObjectOriented.jl Cheat Sheet
 
-TyOOP为Julia提供面向对象编程的功能，支持多继承、点操作符取成员、Python风格的properties以及接口编程。
+ObjectOriented.jl为Julia提供面向对象编程的功能，支持多继承、点操作符取成员、Python风格的properties以及接口编程。
 
 
 ## 1. 类型定义
@@ -50,7 +50,7 @@ mt.x += 1
 
 ## 默认字段
 
-TyOOP支持默认字段。
+ObjectOriented.jl支持默认字段。
 
 在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
 
@@ -195,7 +195,7 @@ end
 end
 
 check_abstract(MyVector)
-# Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 3 entries:
+# Dict{PropertyName, ObjectOriented.CompileTime.PropertyDefinition} with 3 entries:
 #   fill! (getter)    => PropertyDefinition(:fill!, missing, :((Main).Fillable), MethodKind)
 #   len (getter)      => PropertyDefinition(:len, missing, :((Main).HasLength), GetterPropertyKind)
 #   allvalue (setter) => PropertyDefinition(:allvalue, missing, :((Main).Fillable), SetterPropertyKind)
@@ -323,7 +323,7 @@ myapi([])
 在下面这份代码里，我们实现一个使用最小二乘法训练的机器学习模型，并让其支持Julia中ScikitLearn的接口 (ScikitLearnBase.jl)。通过下面代码，用户可以像使用一般ScikitLearn.jl的模型一样来调用这个模型，更可以在MLJ机器学习框架中使用这个模型，而不必关心该模型由面向对象还是多重分派实现。
 
 ```julia
-using TyOOP
+using ObjectOriented
 
 @oodef struct AbstractMLModel{X, Y}
     function fit! end
@@ -371,7 +371,7 @@ clf.predict(xdata)  # 预测模型
 clf.param # 查看模型参数
 
 # ScikitLearnBase提供了fit!和predict两个接口函数。
-# 我们将TyOOP的接口(@like(...))和Julia接口对接。
+# 我们将ObjectOriented.jl的接口(@like(...))和Julia接口对接。
 
 using ScikitLearnBase
 ScikitLearnBase.is_classifier(::@like(AbstractMLModel)) = true
@@ -384,7 +384,7 @@ ScikitLearnBase.predict(clf, xdata)
 
 ## 9. 性能问题
 
-TyOOP生成的代码本身不引入开销，但由于递归调用点操作符运算 (`Base.getproperty(...)`) 的类型推断问题 (例如[这个例子](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm))，尽管大多数时候TyOOP编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
+尽管ObjectOriented.jl生成的代码本身不引入开销，但由于递归调用点操作符运算 (`Base.getproperty(...)`) 的类型推断问题 (例如[这个例子](https://discourse.julialang.org/t/type-inference-problem-with-getproperty/54585/2?u=thautwarm))，尽管大多数时候ObjectOriented.jl编译出的机器码非常高效，但返回类型却忽然变成`Any`或某种`Union`类型。
 
 这可能带来性能问题。出现该问题的情况是有限的，问题场合如下：
 

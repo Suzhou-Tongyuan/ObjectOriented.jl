@@ -1,4 +1,4 @@
-using TyOOP
+using ObjectOriented
 
 @oodef struct IVehicle
     function get_speed end

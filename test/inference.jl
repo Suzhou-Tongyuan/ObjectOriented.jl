@@ -1,5 +1,5 @@
 module Inference
-using TyOOP
+using ObjectOriented
 using InteractiveUtils
 using Test
 

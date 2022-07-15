@@ -1,4 +1,4 @@
-using TyOOP
+using ObjectOriented
 
 ## 定义类
 @oodef mutable struct MyClass
@@ -118,7 +118,7 @@ sq.side
 
 ## 泛型和接口
 
-using TyOOP
+using ObjectOriented
 
 @oodef struct AbstractMLModel{X, Y}
     function fit! end

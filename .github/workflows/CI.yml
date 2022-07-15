@@ -51,6 +51,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using TyOOP
-            DocMeta.setdocmeta!(TyOOP, :DocTestSetup, :(using TyOOP); recursive=true)
-            doctest(TyOOP)'
+            using ObjectOriented
+            DocMeta.setdocmeta!(ObjectOriented, :DocTestSetup, :(using ObjectOriented); recursive=true)
+            doctest(ObjectOriented)'

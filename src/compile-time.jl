@@ -6,7 +6,7 @@ if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compi
     @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
 end
 
-import TyOOP
+import ObjectOriented
 using MLStyle
 using MacroTools: @q
 using DataStructures

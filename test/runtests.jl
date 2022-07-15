@@ -1,9 +1,9 @@
 module TestModule
 using Test
-using TyOOP
+using ObjectOriented
 
 module structdef
-    using TyOOP
+    using ObjectOriented
     using Test
     using MLStyle: @match
     import InteractiveUtils
@@ -98,14 +98,14 @@ module structdef
     # 检查未实现的抽象方法
     # check unimplemented abstract methods
     @testset "interfaces 1" begin
-        @test Set(keys(TyOOP.check_abstract(A3))) == Set([
+        @test Set(keys(ObjectOriented.check_abstract(A3))) == Set([
             PropertyName(false, :interface_prop), # getter
             PropertyName(true, :interface_prop), # setter
             PropertyName(false, :interface_method2),
             PropertyName(false, :interface_method1)
         ])
 
-        @test Set(keys(TyOOP.check_abstract(A4))) == Set([
+        @test Set(keys(ObjectOriented.check_abstract(A4))) == Set([
             PropertyName(false, :a), # getter
             PropertyName(true, :a), # setter
         ])
