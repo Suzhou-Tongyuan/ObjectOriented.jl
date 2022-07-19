@@ -16,7 +16,7 @@ export @typed_access
 用来对任意结构体构造零开销、参数无序的构造器。
 
 用法：
-    TyOOP.construct(目标类型, InitField{field符号, nothing或基类对象}())
+    ObjectOriented.construct(目标类型, InitField{field符号, nothing或基类对象}())
 """
 struct InitField{Sym, Base} end
 abstract type Object{U} end

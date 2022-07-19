@@ -1,5 +1,5 @@
 module A
-using TyOOP
+using ObjectOriented
 using BenchmarkTools
 const T = Any
 
@@ -102,7 +102,7 @@ using BenchmarkTools
 end
 
 module B
-using TyOOP
+using ObjectOriented
 using BenchmarkTools
 const T = Any
 

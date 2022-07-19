@@ -1,4 +1,4 @@
-module TyOOP
+module ObjectOriented
 export @oodef
 using Reexport
 

@@ -1,4 +1,4 @@
-import TyOOP.RunTime: Object
+import ObjectOriented.RunTime: Object
 using DataStructures
 
 Base.@enum PropertyKind MethodKind GetterPropertyKind SetterPropertyKind
@@ -119,17 +119,17 @@ macro property(f, ex)
 end
 
 macro base(X)
-    esc(:($TyOOP.RunTime.InitField{$TyOOP.base_field($sym_generic_type, $X), $X}()))
+    esc(:($ObjectOriented.RunTime.InitField{$ObjectOriented.base_field($sym_generic_type, $X), $X}()))
 end
 
 @inline function _base_initfield(generic_type, :: Type{X}) where X
-    TyOOP.RunTime.InitField{TyOOP.base_field(generic_type, X), X}()
+    ObjectOriented.RunTime.InitField{ObjectOriented.base_field(generic_type, X), X}()
 end
 
 macro mk()
     esc(@q begin
         $__source__
-        $TyOOP.construct(TyOOP.RunTime.default_initializers($sym_generic_type), $sym_generic_type)
+        $ObjectOriented.construct(ObjectOriented.RunTime.default_initializers($sym_generic_type), $sym_generic_type)
     end)
 end
 
@@ -156,7 +156,7 @@ function _mk_arguments!(__module__::Module, __source__::LineNumberNode, argument
         @case :($a = $b)
             a = __module__.macroexpand(__module__, a)
             if a isa Symbol
-                a =  :($TyOOP.RunTime.InitField{$(QuoteNode(a)), nothing}())
+                a =  :($ObjectOriented.RunTime.InitField{$(QuoteNode(a)), nothing}())
             end
             push!(arguments, Expr(:block, ln, a))
             push!(arguments, Expr(:block, ln, b))
@@ -179,8 +179,8 @@ macro mk(ex)
     end
     esc(@q begin
         $__source__
-        # $TyOOP.check_abstract($sym_generic_type) # TODO: a better mechanism to warn abstract classes
-        $TyOOP.construct(TyOOP.RunTime.default_initializers($sym_generic_type), $sym_generic_type, $(arguments...))
+        # $ObjectOriented.check_abstract($sym_generic_type) # TODO: a better mechanism to warn abstract classes
+        $ObjectOriented.construct(ObjectOriented.RunTime.default_initializers($sym_generic_type), $sym_generic_type, $(arguments...))
     end)
 end
 
@@ -317,7 +317,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         type_expr = to_expr(each)
         push!(struct_block, :($base_name_sym :: $type_expr))
         push!(outer_block,
-                :(Base.@inline $TyOOP.base_field(::Type{$class_ann}, ::Type{$type_expr}) where {$(class_where...)} = $(QuoteNode(base_name_sym))))
+                :(Base.@inline $ObjectOriented.base_field(::Type{$class_ann}, ::Type{$type_expr}) where {$(class_where...)} = $(QuoteNode(base_name_sym))))
     end
 
     if !custom_init
@@ -328,7 +328,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                     @eval function $typename()
                         $cur_line
                         $sym_generic_type = $class_ann
-                        $(Expr(:macrocall, getfield(TyOOP, Symbol("@mk")), cur_line))
+                        $(Expr(:macrocall, getfield(ObjectOriented, Symbol("@mk")), cur_line))
                     end
                 end
             end
@@ -345,11 +345,11 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                 type_def.isMutable,
                 :($defhead <: $_merge_shape_types($traithead, $(to_expr.(type_def.bases)...))),
                 Expr(:block, struct_block...)),
-            :($TyOOP.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
+            :($ObjectOriented.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
             
         ];
         [
-            :($TyOOP.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
+            :($ObjectOriented.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
         ];
         outer_block
     ]

@@ -1,6 +1,6 @@
 module Example
 using Test
-using TyOOP
+using ObjectOriented
 
 DoPrint = Ref(false)
 

@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = TyOOP
+CurrentModule = ObjectOriented
 ```
 
-# TyOOP
+# ObjectOriented.jl
 
-[TyOOP](https://github.com/thautwarm/TyOOP.jl)为Julia提供一套相对完整的面向对象机制，设计上主要基于CPython的面向对象，对Julia做了适配。
+[ObjectOriented.jl](https://github.com/thautwarm/ObjectOriented.jl)为Julia提供一套相对完整的面向对象机制，设计上主要基于CPython的面向对象，对Julia做了适配。
 
 其功能一览如下：
 
@@ -22,20 +22,22 @@ CurrentModule = TyOOP
 | 类静态方法  | 否 | 不实现，避免[type piracy](https://docs.julialang.org/en/v1/manual/style-guide/#Avoid-type-piracy) |
 | 元类(metaclass)        | 否 | 不实现，推荐宏处理 |
 
-快速学习请参考[TyOOP Cheat Sheet](./cheat-sheet-cn.md).
+快速学习请参考[ObjectOriented.jl Cheat Sheet](./cheat-sheet-cn.md).
 
 必须强调的是，我们非常认可Julia社区关于“不要在Julia中做OOP”的观点。
 
 我们创建这个指南 **[将OOP翻译到地道的Julia]((./how-to-translate-oop-into-julia.md))**，以指导用户如何将OOP代码翻译为更简短、更高效的Julia代码。
 
-我们更是花费精力将TyOOP设计成这个样子：OOP的使用能被局限在坚定的OOP使用者的代码里，通过接口编程，这些OOP代码和正常的Julia对接，以避免不合适的代码在外部泛滥。
+我们更是花费精力将ObjectOriented.jl设计成这个样子：OOP的使用能被局限在坚定的OOP使用者的代码里，通过接口编程，这些OOP代码和正常的Julia对接，以避免不合适的代码在外部泛滥。
+
+对于熟悉Julia编程风格的人来说，ObjectOriented.jl提供的接口编程和字段继承仍然可能帮到你。对于这样的专业Julia程序员来说，推荐只在OO类型中定义字段，不推荐定义形如`self.method()`的点操作符方法。
 
 ## OO类型定义
 
-TyOOP支持定义class和struct，class使用`@oodef mutable struct`开头，struct使用`@oodef struct`开头。
+ObjectOriented支持定义class和struct，class使用`@oodef mutable struct`开头，struct使用`@oodef struct`开头。
 
 ```julia
-using TyOOP
+using ObjectOriented
 @oodef struct MyStruct
     a :: Int
     function new(a::Int)
@@ -96,7 +98,7 @@ P.P.S: 什么是`@like`？对于一个OO类型`Parent`, 任何继承自`Parent`�
 
 ### 默认字段
 
-TyOOP支持默认字段。
+ObjectOriented.jl支持默认字段。
 
 在为类型定义一个字段时，如果为这个字段指定默认值，那么`@mk`宏允许缺省该字段的初始化。注意，如果不定义`new`函数并使用`@mk`宏，默认字段将无效。
 
@@ -201,7 +203,7 @@ c = C(1, 2)
 则多边形的基类，可以用如下代码定义：
 
 ```julia
-using TyOOP
+using ObjectOriented
 
 const Point = Tuple{Float64, Float64}
 function distance(source::Point, destination::Point)
@@ -271,7 +273,7 @@ rect = Rectangle(3.0, 2.0, (5.0, 2.0))
 @assert rect.get_perimeter() == 10.0
 ```
 
-P.S: 由TyOOP定义的OO类型，只能继承其他OO类型。
+P.S: 由ObjectOriented.jl定义的OO类型，只能继承其他OO类型。
 
 ## Python风格的properties
 
@@ -279,7 +281,7 @@ P.S: 由TyOOP定义的OO类型，只能继承其他OO类型。
 
 对于其中冗余，很多语言如Python提供了一种语法糖，允许抽象`self.xxx`和`self.xxx = value`，这就是property。
 
-TyOOP支持property，用以下的方式：
+ObjectOriented.jl支持property，用以下的方式：
 
 ```julia
 @oodef struct DemoProp
@@ -336,9 +338,9 @@ square.side # => 4.0
 end
 
 # 打印未实现的方法（包括property）
-TyOOP.check_abstract(AbstractSizedContainer)
+ObjectOriented.check_abstract(AbstractSizedContainer)
 # =>
-# Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 2 entries:
+# Dict{PropertyName, ObjectOriented.CompileTime.PropertyDefinition} with 2 entries:
 #  contains (getter) => PropertyDefinition(:contains, missing, AbstractSizedContainer, MethodKind)
 #  length (getter)   => PropertyDefinition(:length, missing, AbstractSizedContainer, GetterPropertyKind)
 
@@ -383,7 +385,7 @@ end
 
 虽然在定义时没有用到这个类型，但在子类定义时，该类型参数能用来约束容器的元素类型。
 
-TyOOP支持各种形式的Julia泛型，下面是一些例子。
+ObjectOriented.jl支持各种形式的Julia泛型，下面是一些例子。
 
 ```julia
 # 数字容器
@@ -420,7 +422,7 @@ my_gen_type = MyGenType{Vector{Int}}(1)
 
 ## 高级特性：接口
 
-TyOOP支持接口编程：使用`@oodef struct`定义一个没有字段的结构体类型，为它添加一些抽象方法，这样就实现了接口。
+ObjectOriented.jl支持接口编程：使用`@oodef struct`定义一个没有字段的结构体类型，为它添加一些抽象方法，这样就实现了接口。
 
 除开业务上方便对接逻辑外，接口还能为代码提供合适的约束。
 
@@ -497,7 +499,7 @@ a_regular_julia_function([1]) # error
 
 可以看到，只有实现了HasLength的OO类型可以应用`a_regular_julia_function`。
 
-此外，我们指出，TyOOP的接口编程本身不导致动态分派。如果代码是静态分派的，抽象是零开销的。
+此外，我们指出，ObjectOriented.jl的接口编程本身不导致动态分派。如果代码是静态分派的，抽象是零开销的。
 
 
 ```julia
@@ -541,8 +543,8 @@ end
 
 # 等价于
 
-TyOOP.typed_access(instance1, Val(:method))(
-    TyOOP.typed_access(instance, Val(:property))
+ObjectOriented.typed_access(instance1, Val(:method))(
+    ObjectOriented.typed_access(instance, Val(:property))
 )
 ```
 

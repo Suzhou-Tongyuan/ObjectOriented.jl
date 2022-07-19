@@ -405,7 +405,7 @@ function parse_function_header!(ln::LineNumberNode, self::FuncInfo, header; is_l
 
     @switch header begin
         @case Expr(:(::), header, returnType)
-            FuncInfo.returnType = returnType
+            self.returnType = returnType
         @case _
     end
 

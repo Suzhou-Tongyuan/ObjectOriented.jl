@@ -111,7 +111,7 @@ ERROR: setfield!: immutable struct of type Data cannot be changed
 
 The old and popular approach to object construction, like Python's `__init__`, works in the old world, but using it for a language providing new features (like immutability) is not deemed a good idea. The old solution can be provided as a library, but it discourages the use of the good features such as immutability.
 
-TyOOP provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for both mutable structs and immutable structs.
+ObjectOriented.jl provides the `new` function and `@mk` macro to address above issue. Using `new` and `@mk`, your code is slightly more concise than in Python, and works for both mutable structs and immutable structs.
 
 ## Julia representation of methods
 

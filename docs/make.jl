@@ -1,16 +1,16 @@
-using TyOOP
+using ObjectOriented
 using Documenter
 
-DocMeta.setdocmeta!(TyOOP, :DocTestSetup, :(using TyOOP); recursive=true)
+DocMeta.setdocmeta!(ObjectOriented, :DocTestSetup, :(using ObjectOriented); recursive=true)
 
 makedocs(;
-    modules=[TyOOP],
+    modules=[ObjectOriented],
     authors="thautwarm <twshere@outlook.com> and contributors",
-    repo="https://github.com/Suzhou-Tongyuan/TyOOP.jl/blob/{commit}{path}#{line}",
-    sitename="TyOOP.jl",
+    repo="https://github.com/Suzhou-Tongyuan/ObjectOriented.jl/blob/{commit}{path}#{line}",
+    sitename="ObjectOriented.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://Suzhou-Tongyuan.github.io/TyOOP.jl",
+        canonical="https://Suzhou-Tongyuan.github.io/ObjectOriented.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -24,6 +24,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/Suzhou-Tongyuan/TyOOP.jl",
+    repo="github.com/Suzhou-Tongyuan/ObjectOriented.jl",
     devbranch="main",
 )

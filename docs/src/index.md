@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = TyOOP
+CurrentModule = ObjectOriented
 ```
 
-# TyOOP
+# ObjectOriented.jl
 
 [中文文档](index-cn.md)
 
-[TyOOP](https://github.com/Suzhou-Tongyuan/TyOOP.jl) provides relatively complete object-oriented programming support for Julia. This is mainly based on CPython's object-oriented programming, and adapted for Julia.
+[ObjectOriented.jl](https://github.com/Suzhou-Tongyuan/ObjectOriented.jl) provides relatively complete object-oriented programming support for Julia. This is mainly based on CPython's object-oriented programming, and adapted for Julia.
 
 The feature list is given below:
 
@@ -23,20 +23,22 @@ The feature list is given below:
 | static class methods  | no | won't fix to avoid [type piracy](https://docs.julialang.org/en/v1/manual/style-guide/#Avoid-type-piracy) |
 | metaclasses        | no | won't fix in favour of macros |
 
-Quick start through [TyOOP Cheat Sheet](./cheat-sheet-en.md).
+Quick start through [ObjectOriented.jl Cheat Sheet](./cheat-sheet-en.md).
 
 Note that we very much support the community idea "do not do OOP in Julia".
 
 We make this guide **[Translating OOP into Idiomatic Julia](./how-to-translate-oop-into-julia.md)** to instruct users on how to translate OOP code into Julia, promising more concise, more extensible and more efficient code.
 
-We even took the effort to design TyOOP as what it is now: the usage of OOP can be confined to the code of committed OOP users, and through interface programming, code of OOP exports APIs in normal Julia to avoid the proliferation of inappropriate code outside.
+We even took the effort to design ObjectOriented.jl as what it is now: the usage of OOP can be confined to the code of committed OOP users, and through interface programming, code of OOP exports APIs in normal Julia to avoid the proliferation of inappropriate code outside.
+
+For those familiar with the Julia programming style, ObjectOriented.jl's the interface programming and field inheritance may still help. For such professional Julia programmers, it is recommended to only define fields in OO types and not to define dot methods (`self.method()`).
 
 ## OO type definition
 
-TyOOP supports defining `class`es and `struct`s. A `class` definition starts with `@oodef mutable struct`, while a `struct` definition starts with `@oodef struct`.
+ObjectOriented.jl supports defining `class`es and `struct`s. A `class` definition starts with `@oodef mutable struct`, while a `struct` definition starts with `@oodef struct`.
 
 ```julia
-using TyOOP
+using ObjectOriented
 @oodef struct MyStruct
     a :: Int
     function new(a::Int)
@@ -143,7 +145,7 @@ The traditional OO languages such Python/C++/Java/C\# do not have native immutab
 1. creating a new instance `self` of the type.
 2. invoking a constructor function to initialize the `self` instance. Side effects are introduced.
 
-TyOOP can support such style for classes (`mutable struct`s), but it is not our best practice.
+ObjectOriented.jl can support such style for classes (`mutable struct`s), but it is not our best practice.
 
 Example:
 
@@ -203,7 +205,7 @@ The following example introduces mixin which is a common use of (multiple) inher
 We define a base class `IPolygon` which might have subclasses `Square`, `Rectangle`, `Triangle` or even general polygons. Despite the differences between these possible subclasses, a standard algorithm to compute perimeters is shared: sum up the lengths of all the edges.
 
 ```julia
-using TyOOP
+using ObjectOriented
 
 const Point = Tuple{Float64, Float64}
 function distance(source::Point, destination::Point)
@@ -274,7 +276,7 @@ rect = Rectangle(3.0, 2.0, (5.0, 2.0))
 @assert rect.get_perimeter() == 10.0
 ```
 
-P.S: OO types shall only inherit from OO types defined using TyOOP.
+P.S: OO types shall only inherit from OO types defined using ObjectOriented.jl.
 
 ## Python-style properties
 
@@ -282,7 +284,7 @@ In Java, the getter functions `get_xxx` and setter functions `set_xxx` are used 
 
 The syntactic redundancies involved above can be adddressed by a syntatic sugar, which is named "properties" by many languages such as Python.
 
-TyOOP supports so-called "properties", in the following apprach:
+ObjectOriented.jl supports so-called "properties", in the following apprach:
 
 ```julia
 @oodef struct DemoProp
@@ -339,9 +341,9 @@ As can be seen, the side length of the square changes accordingly as the area ge
 end
 
 # print not implemented methods (including properties)
-TyOOP.check_abstract(AbstractSizedContainer)
+ObjectOriented.check_abstract(AbstractSizedContainer)
 # =>
-# Dict{PropertyName, TyOOP.CompileTime.PropertyDefinition} with 2 entries:
+# Dict{PropertyName, ObjectOriented.CompileTime.PropertyDefinition} with 2 entries:
 #  contains (getter) => PropertyDefinition(:contains, missing, AbstractSizedContainer, MethodKind)
 #  length (getter)   => PropertyDefinition(:length, missing, AbstractSizedContainer, GetterPropertyKind)
 
@@ -422,7 +424,7 @@ my_gen_type = MyGenType{Vector{Int}}(1)
 
 ## Advanced feature: Interfaces
 
-TyOOP supports interface programming. Use `@oodef struct` to define a struct which has no fields, and add some abstract/mixin methods to it, in this way we achieve interface programming.
+ObjectOriented.jl supports interface programming. Use `@oodef struct` to define a struct which has no fields, and add some abstract/mixin methods to it, in this way we achieve interface programming.
 
 Despite the ease of connecting with the real business logic, interfaces also helps to specify proper constraints in your code.
 
@@ -539,8 +541,8 @@ end
 
 # <=>
 
-TyOOP.getproperty_typed(instance1, Val(:method))(
-    TyOOP.getproperty_typed(instance, Val(:property))
+ObjectOriented.getproperty_typed(instance1, Val(:method))(
+    ObjectOriented.getproperty_typed(instance, Val(:property))
 )
 ```
 

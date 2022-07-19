@@ -62,15 +62,15 @@ function build_multiple_dispatch!(
     out = cgi.outblock
     base_dict = cgi.base_dict
     push!(out,
-        :($TyOOP.ootype_bases(::$Type{<:$t}) = $(Set{Type}(keys(base_dict)))))
+        :($ObjectOriented.ootype_bases(::$Type{<:$t}) = $(Set{Type}(keys(base_dict)))))
 
     for (k, v) in cgi.base_dict
         push!(out,
-            :($Base.@inline $TyOOP.base_field(::$Type{<:$t}, ::Type{<:$k}) = $(QuoteNode(v))))
+            :($Base.@inline $ObjectOriented.base_field(::$Type{<:$t}, ::Type{<:$k}) = $(QuoteNode(v))))
     end
 
     push!(out,
-        :($TyOOP.direct_methods(::$Type{<:$t}) = $(QuoteNode(method_dict))))
+        :($ObjectOriented.direct_methods(::$Type{<:$t}) = $(QuoteNode(method_dict))))
 
 
     build_multiple_dispatch2!(ln, cgi)
@@ -83,7 +83,7 @@ function build_multiple_dispatch2!(ln::LineNumberNode, cgi::CodeGenInfo)
 
     push!(out, ln)
     push!(out,
-        :($TyOOP.direct_fields(::Type{<:$t}) = $(Expr(:tuple, QuoteNode.(valid_fieldnames)...))))
+        :($ObjectOriented.direct_fields(::Type{<:$t}) = $(Expr(:tuple, QuoteNode.(valid_fieldnames)...))))
 
     build_multiple_dispatch3!(ln, cgi)
 end
@@ -103,14 +103,14 @@ function _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, 
                         $convert($fieldtype(typeof(this), $(QuoteNode(sym))), value))
                 end)
         @case [head, path...]
-            _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, :($TyOOP.get_base($this, $head)), path, sym)
+            _build_field_getter_setter_for_pathed_base(push_getter!, push_setter!, :($ObjectOriented.get_base($this, $head)), path, sym)
     end
 end
 
 function _build_method_get(push_getter!, this, path, sym, funcval)
     push_getter!(
         QuoteNode(sym) =>
-        :($TyOOP.BoundMethod($this, $funcval)))
+        :($ObjectOriented.BoundMethod($this, $funcval)))
 end
 
 function _build_getter_property(push_getter!, this, path, sym, getter_func)
@@ -135,7 +135,7 @@ end
 function build_val_getters(t, pairs)
     result = []
     for (k, v) in pairs
-        exp = @q function $TyOOP.getproperty_typed(this::$t, ::Val{$(k)})
+        exp = @q function $ObjectOriented.getproperty_typed(this::$t, ::Val{$(k)})
             return $v
         end
         push!(result, exp)
@@ -146,7 +146,7 @@ end
 function build_val_setters(t, pairs)
     result = []
     for (k, v) in pairs
-        exp = @q function $TyOOP.setproperty_typed!(this::$t, value, ::Val{$(k)})
+        exp = @q function $ObjectOriented.setproperty_typed!(this::$t, value, ::Val{$(k)})
             return $v
         end
         push!(result, exp)
@@ -182,7 +182,7 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
         path = Any[path_tuple...]
         push!(
             subclass_block,
-            :($Base.@inline $TyOOP.issubclass(::$Type{<:$cur_mod.$t}, ::$Type{<:$base}) = true))
+            :($Base.@inline $ObjectOriented.issubclass(::$Type{<:$cur_mod.$t}, ::$Type{<:$base}) = true))
         for fieldname :: Symbol in _direct_fields
             if @getter_prop(fieldname) in defined
                 continue
@@ -222,7 +222,7 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     # build resolution table (specifically, the bodies of getter and setter)
     process_each!(:($(cgi.cur_mod).$(cgi.typename)), (), Tuple(cgi.fieldnames), cgi.method_dict)
     for (base, path_tuple) in mro
-        process_each!(base, path_tuple, TyOOP.direct_fields(base), TyOOP.direct_methods(base))
+        process_each!(base, path_tuple, ObjectOriented.direct_fields(base), ObjectOriented.direct_methods(base))
     end
 
     # detect all unimplemented abstract methods
@@ -230,12 +230,12 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
         delete!(abstract_methods, implemented)
     end
 
-    check_abstract_def = @q function $TyOOP.check_abstract(::$Type{<:$t})
+    check_abstract_def = @q function $ObjectOriented.check_abstract(::$Type{<:$t})
         $(lift_to_quot(abstract_methods))
     end
 
-    getter_body = build_if(get_block, :($TyOOP.getproperty_fallback(this, prop)))
-    setter_body = build_if(set_block, :($TyOOP.setproperty_fallback!(this, prop, value)))
+    getter_body = build_if(get_block, :($ObjectOriented.getproperty_fallback(this, prop)))
+    setter_body = build_if(set_block, :($ObjectOriented.setproperty_fallback!(this, prop, value)))
     expr_propernames = Expr(:tuple, QuoteNode.(unique!(Symbol[k.name for k in defined]))...)
     out = cgi.outblock
 
@@ -252,7 +252,7 @@ function build_multiple_dispatch3!(ln::LineNumberNode, cgi::CodeGenInfo)
     push!(out, check_abstract_def)
 
     ## mro
-    push!(out, :($TyOOP.ootype_mro(::$Type{<:$t}) = $mro_expr))
+    push!(out, :($ObjectOriented.ootype_mro(::$Type{<:$t}) = $mro_expr))
 
     ## codegen getter and setter
     push!(out, @q begin
