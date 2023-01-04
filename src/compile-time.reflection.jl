@@ -3,7 +3,7 @@ struct Undefined end
 const NullSymbol = Union{Symbol, Undefined}
 const _undefined = Undefined()
 const PVec{T, N} = NTuple{N, T}
-const _pseudo_line = LineNumberNode(1)
+const _pseudo_line = LineNumberNode(1, Symbol("<PSEUDO>"))
 
 Base.@kwdef struct TypeRepr
     base :: Any = _undefined

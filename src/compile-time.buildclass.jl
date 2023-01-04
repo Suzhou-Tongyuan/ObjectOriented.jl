@@ -209,7 +209,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
     traitname = Symbol(typename, "::", :trait)
     traithead = apply_curly(traitname, Symbol[p.name for p in type_def.typePars])
     custom_init :: Bool = false
-    
+
     class_where = type_def_create_where(type_def)
     class_ann = type_def_create_ann(type_def)
 
@@ -267,7 +267,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                 each.isAbstract ? missing : :($cur_mod.$meth_name),
                 :($cur_mod.$typename),
                 MethodKind))
-    
+
     end
 
     for each::PropertyInfo in type_def.properties
@@ -289,7 +289,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
                     prop.isAbstract ? missing : :($cur_mod.$meth_name),
                     :($cur_mod.$typename),
                     SetterPropertyKind))
-        
+
         end
 
         if !(each.get isa Undefined)
@@ -336,17 +336,17 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
     end
 
     defhead = apply_curly(typename, class_where)
-    expr_default_initializers = 
+    expr_default_initializers =
         isempty(default_inits) ? :(NamedTuple()) : Expr(:tuple, default_inits...)
     outer_block = [
         [
             :(struct $traithead end),
-            Expr(:struct, 
+            Expr(:struct,
                 type_def.isMutable,
                 :($defhead <: $_merge_shape_types($traithead, $(to_expr.(type_def.bases)...))),
                 Expr(:block, struct_block...)),
             :($ObjectOriented.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
-            
+
         ];
         [
             :($ObjectOriented.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
@@ -358,7 +358,7 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
         cur_mod,
         base_dict,
         fieldnames,
-        typename, 
+        typename,
         class_where,
         class_ann,
         methods,

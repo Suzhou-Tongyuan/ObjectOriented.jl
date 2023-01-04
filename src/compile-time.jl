@@ -8,8 +8,8 @@ end
 
 import ObjectOriented
 using MLStyle
-using MacroTools: @q
 using DataStructures
+include("compat.q.jl")
 include("compile-time.utils.jl")
 include("compile-time.reflection.jl")
 include("compile-time.c3_linearize.jl")
