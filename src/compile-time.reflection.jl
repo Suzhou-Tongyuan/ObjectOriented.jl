@@ -356,6 +356,7 @@ end
 
 function parse_function(ln :: LineNumberNode, ex; fallback :: T = _undefined,  allow_short_func :: Bool = false, allow_lambda :: Bool = false) where T
     self :: FuncInfo = FuncInfo()
+    self.ln = ln
     @switch ex begin
         @case Expr(:function, header, body)
             self.body = body

@@ -114,3 +114,27 @@ end
 some_func(MyType(1, 2)) # 3
 some_func(MyDerivedType(1, 2, 3)) # 3
 ```
+
+## Troubleshooting
+
+1. [The integrated debugger implemented in Julia-VSCode cannot handle `@generated` functions](https://github.com/julia-vscode/julia-vscode/issues/2441), which causes a bug when entering `@mk` expressions. A workaround can be made as follows:
+
+   ```julia
+   @oodef mutable struct YourClass
+        x::Int
+        y::Int
+        function new(x, y)
+            # you can debug here
+            self = @mk begin
+                # you can debug here
+                x = x
+                # you can debug here
+                y = y
+                # do not reach here!
+                # please jump over the end of '@mk' expression!
+            end
+            # you can debug here
+            return self
+        end
+   end
+   ```
