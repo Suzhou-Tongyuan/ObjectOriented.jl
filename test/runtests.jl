@@ -327,6 +327,15 @@ module structdef
         @test some_ref_val[] == 5
         @test x.b == "sada"
     end
+
+    @testset "short function constructor" begin
+        @oodef struct TestShortFunction
+            new() = begin
+               @mk
+            end
+        end
+        x = TestFunctionNew()
+    end
 end
 
 include("example.jl")
