@@ -227,6 +227,11 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             continue
         end
 
+        if Meta.isexpr(x, :block)
+            parse_class_body!(ln, self, x.args; preprocess = preprocess)
+            continue
+        end
+
         if (field_info = parse_field_def(ln, x, fallback = nothing)) isa FieldInfo
             push!(self.fields, field_info)
             continue

@@ -303,6 +303,23 @@ module structdef
         end
     end
 
+    @testset "blocks in struct" begin
+        macro gen()
+            quote
+                a :: Int
+                b :: Nothing
+            end |> esc
+        end
+        @oodef struct TestBlockType
+            @gen
+            begin
+                c :: Bool
+                d :: Char
+            end
+        end
+        TestBlockType(1, nothing, true, 'a')
+    end
+
     z = "2"
     some_ref_val = Ref(2)
     @oodef struct TestDefaultFieldsImmutable
