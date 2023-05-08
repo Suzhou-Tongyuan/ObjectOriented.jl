@@ -227,6 +227,11 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             continue
         end
 
+        if (func_info = parse_function(ln, x, fallback = nothing, allow_lambda = false, allow_short_func = true)) isa FuncInfo
+            push!(self.methods, func_info)
+            continue
+        end
+
         if (field_info = parse_field_def(ln, x, fallback = nothing)) isa FieldInfo
             push!(self.fields, field_info)
             continue
@@ -237,11 +242,6 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             continue
         end
 
-
-        if (func_info = parse_function(ln, x, fallback = nothing, allow_lambda = false, allow_short_func = false)) isa FuncInfo
-            push!(self.methods, func_info)
-            continue
-        end
         throw(create_exception(ln, "unrecognised statement in $(self.name) definition: $(x)"))
 
     end
