@@ -303,21 +303,25 @@ module structdef
         end
     end
 
+    macro gen()
+        quote
+            a :: Int
+            b :: Nothing
+        end |> esc
+    end
+    @oodef struct TestBlockType
+        @gen
+        begin
+            c :: Bool
+            d :: Char
+        end
+    end
     @testset "blocks in struct" begin
-        macro gen()
-            quote
-                a :: Int
-                b :: Nothing
-            end |> esc
-        end
-        @oodef struct TestBlockType
-            @gen
-            begin
-                c :: Bool
-                d :: Char
-            end
-        end
-        TestBlockType(1, nothing, true, 'a')
+        obj = TestBlockType(1, nothing, true, 'a')
+        @test obj.a == 1
+        @test obj.b === nothing
+        @test obj.c === true
+        @test obj.d == 'a'
     end
 
     z = "2"
