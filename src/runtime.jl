@@ -63,15 +63,15 @@ function direct_fields end
 """用户可自定义的默认成员访问方法。
 如果为类型A定义重载此方法，则当类型A无法根据名字`name`找到成员时，该方法被调用。
 """
-function getproperty_fallback(self, name)
-    error("unknown property '$name' for object '$self'")
+function getproperty_fallback(_::T, name) where T
+    error("unknown property '$name' for object of type '$T'")
 end
 
 """用户可自定义的默认成员赋值方法。
 如果为类型A定义重载此方法，则当类型A无法根据名字`name`找到可以赋值的成员时，该方法被调用。
 """
-function setproperty_fallback!(self, name, value)
-    error("unknown property '$name' for object '$self'")
+function setproperty_fallback!(_::T, name, value) where T
+    error("unknown property '$name' for object of type '$T'")
 end
 
 """获取实例的基类实例。
