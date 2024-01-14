@@ -348,6 +348,25 @@ module structdef
         @test some_ref_val[] == 5
         @test x.b == "sada"
     end
+
+    """
+    Documented struct fancy docstring
+    """
+    @oodef struct DocumentedStruct
+        a :: Int
+        """
+        Constructor docstring
+        """
+        function new(x)
+            @mk a = 2x
+        end
+    end
+
+    @testset "documented struct" begin
+        x = DocumentedStruct(123)
+        @test occursin("Documented struct fancy docstring", string(@doc(DocumentedStruct)))
+        @test x.a == 246
+    end
 end
 
 include("example.jl")
