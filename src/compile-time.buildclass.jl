@@ -243,9 +243,22 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
             insert!(each.body.args, 1, each.ln)
             each.name = typename
             push!(struct_block, each.ln)
-            push!(struct_block, to_expr(each))
+
+            # (partially) fix issue #10: parametric constructor warning
             if !isempty(type_def.typePars)
+                if isempty(each.pars) && isempty(each.kwPars)
+                # although it is generally difficult to analyze
+                # the use of type parameters in AST level,
+                # for the special case that the constructor has no parameters,
+                # we can safely assume that the type parameters are not used
+                else
+                    push!(struct_block, to_expr(each))
+                end
                 each.name = class_ann
+                push!(struct_block, to_expr(each))
+            else
+                # when there is no type parameters, we can safely use
+                # this constructor as the default one.
                 push!(struct_block, to_expr(each))
             end
             custom_init = true

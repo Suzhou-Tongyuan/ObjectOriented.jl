@@ -40,7 +40,7 @@ function build_multiple_dispatch!(
                     @warn "properties using `set_xxx` are deprecated, use '@property($name) do; set = (self, value) -> statement end' instead."
                     _has_warn_setter_dep[] = true
                 end
-                
+
                 local key = @setter_prop(name)
                 if !haskey(method_dict, key)
                     method_dict[key] = PropertyDefinition(name, desc.def, desc.from_type, SetterPropertyKind)

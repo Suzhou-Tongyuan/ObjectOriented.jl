@@ -369,6 +369,15 @@ module structdef
     end
 end
 
+@testset "fix #10: parametric constructor warning" begin
+    @test_nowarn @eval @oodef struct Foo{F}
+        x::F
+        function new()
+          @mk x = F(1)
+        end
+    end
+end
+
 include("example.jl")
 Example.DoPrint[] = false
 Example.runtest()
