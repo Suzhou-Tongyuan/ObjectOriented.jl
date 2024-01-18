@@ -222,7 +222,7 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             x = preprocess(x)
         end
 
-        if x isa LineNumberNode
+        if x isa LineNumberNode || x isa String
             ln = x
             continue
         end
@@ -247,7 +247,7 @@ function parse_class_body!(ln::LineNumberNode, self::TypeDef, body; preprocess::
             push!(self.methods, func_info)
             continue
         end
-        throw(create_exception(ln, "unrecognised statement in $(self.name) definition: $(x)"))
+        throw(create_exception(ln, "unrecognised statement in $(self.name) definition: $x"))
 
     end
 end

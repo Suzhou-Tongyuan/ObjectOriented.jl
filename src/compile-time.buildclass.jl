@@ -341,15 +341,15 @@ function codegen(cur_line :: LineNumberNode, cur_mod::Module, type_def::TypeDef)
     outer_block = [
         [
             :(struct $traithead end),
-            Expr(:struct,
+            :(Base.@__doc__ $(Expr(:struct,
                 type_def.isMutable,
                 :($defhead <: $_merge_shape_types($traithead, $(to_expr.(type_def.bases)...))),
-                Expr(:block, struct_block...)),
-            :($ObjectOriented.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
+                Expr(:block, struct_block...)))),
+            :(Base.@__doc__ $ObjectOriented.CompileTime._shape_type(t::$Type{<:$typename}) = $supertype(t)),
 
         ];
         [
-            :($ObjectOriented.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
+            :(Base.@__doc__ $ObjectOriented.RunTime.default_initializers(t::$Type{<:$typename}) = $expr_default_initializers)
         ];
         outer_block
     ]
